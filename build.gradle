@@ -102,7 +102,7 @@ publishing {
                 scm {
                     connection = 'scm:git:git://github.com/JoeAlisson/napile.primitive.git'
                     developerConnection = 'scm:git:ssh://github.com:JoeAlisson/napile.primitive.git'
-                    url = 'https://github.com/JoeAlisson/apile.primitive.git/tree/master'
+                    url = 'https://github.com/JoeAlisson/napile.primitive.git/tree/master'
                 }
             }
         }

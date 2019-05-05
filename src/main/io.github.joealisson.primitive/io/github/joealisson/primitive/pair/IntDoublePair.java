@@ -23,14 +23,6 @@ import io.github.joealisson.primitive.pair.absint.key.IntKeyPair;
 import io.github.joealisson.primitive.pair.absint.value.DoubleValuePair;
 import io.github.joealisson.primitive.pair.absint.value.LongValuePair;
 
-public interface IntDoublePair extends IntKeyPair, DoubleValuePair
-{
-	@Override
-	int getKey();
+public interface IntDoublePair extends IntKeyPair, DoubleValuePair {
 
-	@Override
-	double getValue();
-
-	@Override
-	double setValue(double value);
 }

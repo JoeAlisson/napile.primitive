@@ -26,11 +26,6 @@ import io.github.joealisson.primitive.pair.absint.value.ObjectValuePair;
  * @author VISTALL
  *
  */
-public interface LongObjectPair<G> extends LongKeyPair, ObjectValuePair<G>
-{
-	long getKey();
+public interface LongObjectPair<G> extends LongKeyPair, ObjectValuePair<G> {
 
-	G getValue();
-
-	G setValue(G value);
 }

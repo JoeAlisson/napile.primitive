@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntFunction;
 
+import io.github.joealisson.primitive.function.IntDoubleConsumer;
+import io.github.joealisson.primitive.function.IntObjectConsumer;
 import io.github.joealisson.primitive.pair.IntObjectPair;
 import io.github.joealisson.primitive.Container;
 import io.github.joealisson.primitive.collections.IntCollection;
@@ -343,6 +345,27 @@ public interface IntObjectMap<V> extends Container
 		}
 
 		return v;
+	}
+
+	/**
+	 * Performs the given action for each entry in this map until all entries
+	 * have been processed or the action throws an exception.   Unless
+	 * otherwise specified by the implementing class, actions are performed in
+	 * the order of entry set iteration (if an iteration order is specified.)
+	 * Exceptions thrown by the action are relayed to the caller.
+	 *
+	 * The default implementation makes no guarantees about synchronization
+	 * or atomicity properties of this method. Any implementation providing
+	 * atomicity guarantees must override this method and document its
+	 * concurrency properties.
+	 *
+	 * @param action The action to be performed for each entry
+	 * @throws NullPointerException if the specified action is null
+	 * removed during iteration
+	 */
+	default void forEach(IntObjectConsumer<? super V> action) {
+		Objects.requireNonNull(action);
+		entrySet().forEach(entry -> action.accept(entry.getKey(), entry.getValue()));
 	}
 
 	/**

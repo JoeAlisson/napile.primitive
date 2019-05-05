@@ -26,14 +26,6 @@ import io.github.joealisson.primitive.pair.absint.value.LongValuePair;
  * @author VISTALL
  *
  */
-public interface IntLongPair extends IntKeyPair, LongValuePair
-{
-	@Override
-	int getKey();
+public interface IntLongPair extends IntKeyPair, LongValuePair {
 
-	@Override
-	long getValue();
-
-	@Override
-	long setValue(long value);
 }
