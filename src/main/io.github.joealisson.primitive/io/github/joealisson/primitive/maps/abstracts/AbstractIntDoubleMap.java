@@ -44,20 +44,12 @@ import java.util.Set;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
+ * @author Alisson Oliveira
+ *
  * @see io.github.joealisson.primitive.maps.IntDoubleMap
  * @since 1.0.0
  */
-public abstract class AbstractIntDoubleMap implements IntDoubleMap
-{
-	/**
-	 * Sole constructor.  (For invocation by subclass constructors, typically
-	 * implicit.)
-	 */
-	protected AbstractIntDoubleMap()
-	{
-	}
-
-	// Query Operations
+public abstract class AbstractIntDoubleMap implements IntDoubleMap {
 
 	/**
 	 * {@inheritDoc}
@@ -88,8 +80,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public boolean containsValue(double value)
-	{
+	public boolean containsValue(double value) {
 		for (IntDoublePair e : entrySet()) {
 			if (value == e.getValue()) {
 				return true;
@@ -110,13 +101,9 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public boolean containsKey(int key)
-	{
-		Iterator<IntDoublePair> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			IntDoublePair e = i.next();
-			if(key == e.getKey())
+	public boolean containsKey(int key) {
+		for (IntDoublePair e : entrySet()) {
+			if (key == e.getKey())
 				return true;
 		}
 		return false;
@@ -134,15 +121,14 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public double get(int key)
-	{
-		for(IntDoublePair e : entrySet())
-			if(key == e.getKey())
+	public double get(int key) {
+		for(IntDoublePair e : entrySet()) {
+			if (key == e.getKey()) {
 				return e.getValue();
-
+			}
+		}
 		return Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
 	}
-
 
 	// Modification Operations
 
@@ -156,8 +142,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public double put(int key, double value)
-	{
+	public double put(int key, double value) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -189,13 +174,11 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
 	 */
-	public double remove(int key)
-	{
+	public double remove(int key) {
 		Iterator<IntDoublePair> i = entrySet().iterator();
 		IntDoublePair correctEntry = null;
 
-		while(correctEntry == null && i.hasNext())
-		{
+		while(correctEntry == null && i.hasNext()) {
 			IntDoublePair e = i.next();
 			if(key == e.getKey())
 				correctEntry = e;
@@ -203,8 +186,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 
 
 		double oldValue = Variables.RETURN_LONG_VALUE_IF_NOT_FOUND;
-		if(correctEntry != null)
-		{
+		if(correctEntry != null) {
 			oldValue = correctEntry.getValue();
 			i.remove();
 		}
@@ -229,8 +211,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public void putAll(IntDoubleMap m)
-	{
+	public void putAll(IntDoubleMap m) {
 		for(IntDoublePair e : m.entrySet())
 			put(e.getKey(), e.getValue());
 	}
@@ -245,8 +226,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 *
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 */
-	public void clear()
-	{
+	public void clear() {
 		entrySet().clear();
 	}
 
@@ -275,16 +255,11 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * is performed, so there is a slight chance that multiple calls to this
 	 * method will not all return the same set.
 	 */
-	public IntSet keySet()
-	{
-		if(keySet == null)
-		{
-			keySet = new AbstractIntSet()
-			{
-				public IntIterator iterator()
-				{
-					return new IntIterator()
-					{
+	public IntSet keySet() {
+		if(keySet == null) {
+			keySet = new AbstractIntSet() {
+				public IntIterator iterator() {
+					return new IntIterator() {
 						private Iterator<IntDoublePair> i = entrySet().iterator();
 
 						public boolean hasNext()
@@ -292,7 +267,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 							return i.hasNext();
 						}
 
-						public int next()
+						public int nextInt()
 						{
 							return i.next().getKey();
 						}
@@ -332,16 +307,11 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * performed, so there is a slight chance that multiple calls to this
 	 * method will not all return the same collection.
 	 */
-	public DoubleCollection values()
-	{
-		if(values == null)
-		{
-			values = new AbstractDoubleCollection()
-			{
-				public DoubleIterator iterator()
-				{
-					return new DoubleIterator()
-					{
+	public DoubleCollection values() {
+		if(values == null) {
+			values = new AbstractDoubleCollection() {
+				public DoubleIterator iterator() {
+					return new DoubleIterator() {
 						private Iterator<IntDoublePair> i = entrySet().iterator();
 
 						public boolean hasNext()
@@ -402,42 +372,30 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @param o object to be compared for equality with this map
 	 * @return true if the specified object is equal to this map
 	 */
-	public boolean equals(Object o)
-	{
-		if(o == this)
-		{
+	public boolean equals(Object o) {
+		if(o == this) {
 			return true;
 		}
 
-		if(!(o instanceof IntLongMap))
-		{
+		if(!(o instanceof IntLongMap)) {
 			return false;
 		}
 		IntLongMap m = (IntLongMap) o;
-		if(m.size() != size())
-		{
+		if(m.size() != size()) {
 			return false;
 		}
 
-		try
-		{
-			Iterator<IntDoublePair> i = entrySet().iterator();
-			while(i.hasNext())
-			{
-				IntDoublePair e = i.next();
+		try {
+			for (IntDoublePair e : entrySet()) {
 				int key = e.getKey();
 				double value = e.getValue();
-				if(value != m.get(key))
-				{
+				if (value != m.get(key)) {
 					return false;
 				}
 			}
-		}
-		catch(ClassCastException | NullPointerException unused)
-		{
+		} catch(NullPointerException unused) {
 			return false;
 		}
-
 		return true;
 	}
 
@@ -459,11 +417,11 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 * @see Object#equals(Object)
 	 * @see Set#equals(Object)
 	 */
-	public int hashCode()
-	{
+	public int hashCode() {
 		int h = 0;
-		for(IntDoublePair intDoublePair : entrySet())
+		for(IntDoublePair intDoublePair : entrySet()) {
 			h += intDoublePair.hashCode();
+		}
 		return h;
 	}
 
@@ -479,26 +437,22 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 *
 	 * @return a string representation of this map
 	 */
-	public String toString()
-	{
+	public String toString() {
 		Iterator<IntDoublePair> i = entrySet().iterator();
-		if(!i.hasNext())
-		{
+		if(!i.hasNext()) {
 			return "{}";
 		}
 
 		StringBuilder sb = new StringBuilder();
 		sb.append('{');
-		for(; ;)
-		{
+		for(; ;) {
 			IntDoublePair e = i.next();
 			int key = e.getKey();
 			double value = e.getValue();
 			sb.append(key);
 			sb.append('=');
 			sb.append(value);
-			if(!i.hasNext())
-			{
+			if(!i.hasNext()) {
 				return sb.append('}').toString();
 			}
 			sb.append(", ");
@@ -511,8 +465,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 *
 	 * @return a shallow copy of this map
 	 */
-	protected Object clone() throws CloneNotSupportedException
-	{
+	protected Object clone() throws CloneNotSupportedException {
 		AbstractIntDoubleMap result = (AbstractIntDoubleMap) super.clone();
 		result.keySet = null;
 		result.values = null;

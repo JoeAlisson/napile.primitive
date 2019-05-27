@@ -24,10 +24,7 @@
  */
 package io.github.joealisson.primitive.sets.impl;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.NavigableSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -105,7 +102,7 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 	 */
 	public CTreeIntSet()
 	{
-		m = new CTreeIntObjectMap<Object>();
+		m = new CTreeIntObjectMap<>();
 	}
 
 	/**
@@ -118,7 +115,7 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 	 */
 	public CTreeIntSet(IntComparator comparator)
 	{
-		m = new CTreeIntObjectMap<Object>(comparator);
+		m = new CTreeIntObjectMap<>(comparator);
 	}
 
 	/**
@@ -148,7 +145,7 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 	 */
 	public CTreeIntSet(SortedIntSet s)
 	{
-		m = new CTreeIntObjectMap<Object>(s.comparator());
+		m = new CTreeIntObjectMap<>(s.comparator());
 		addAll(s);
 	}
 
@@ -174,7 +171,7 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 		try
 		{
 			clone = (CTreeIntSet) super.clone();
-			clone.setMap(new CTreeIntObjectMap<Object>(m));
+			clone.setMap(new CTreeIntObjectMap<>(m));
 		}
 		catch(CloneNotSupportedException e)
 		{
@@ -300,6 +297,10 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 		return m.descendingKeySet().iterator();
 	}
 
+	@Override
+	public Spliterator.OfInt spliterator() {
+		return m.keySet().spliterator();
+	}
 
 	/* ---------------- AbstractSet Overrides -------------- */
 
@@ -331,11 +332,7 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 		{
 			return containsAll(c) && c.containsAll(this);
 		}
-		catch(ClassCastException unused)
-		{
-			return false;
-		}
-		catch(NullPointerException unused)
+		catch(ClassCastException | NullPointerException unused)
 		{
 			return false;
 		}
@@ -358,12 +355,8 @@ public class CTreeIntSet extends AbstractIntSet implements NavigableIntSet, Clon
 	{
 		// Override AbstractSet version to avoid unnecessary call to size()
 		boolean modified = false;
-		for(IntIterator i = c.iterator(); i.hasNext();)
-		{
-			if(remove(i.next()))
-			{
-				modified = true;
-			}
+		for(IntIterator i = c.iterator(); i.hasNext();) {
+			modified |= remove(i.nextInt());
 		}
 		return modified;
 	}

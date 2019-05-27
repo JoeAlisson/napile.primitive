@@ -88,7 +88,7 @@ public abstract class AbstractIntIntMap implements IntIntMap {
         IntIntPair correctEntry = null;
 
         while(correctEntry == null && i.hasNext()) {
-            IntIntPair e = (IntIntPair)i.next();
+            IntIntPair e = i.next();
             if (key == e.getKey()) {
                 correctEntry = e;
             }
@@ -104,10 +104,8 @@ public abstract class AbstractIntIntMap implements IntIntMap {
     }
 
     public void putAll(IntIntMap m) {
-        Iterator iterator = m.entrySet().iterator();
 
-        while(iterator.hasNext()) {
-            IntIntPair e = (IntIntPair)iterator.next();
+        for (IntIntPair e : m.entrySet()) {
             this.put(e.getKey(), e.getValue());
         }
 
@@ -128,8 +126,8 @@ public abstract class AbstractIntIntMap implements IntIntMap {
                             return this.i.hasNext();
                         }
 
-                        public int next() {
-                            return ((IntIntPair)this.i.next()).getKey();
+                        public int nextInt() {
+                            return (this.i.next()).getKey();
                         }
 
                         public void remove() {
@@ -162,8 +160,8 @@ public abstract class AbstractIntIntMap implements IntIntMap {
                             return this.i.hasNext();
                         }
 
-                        public int next() {
-                            return ((IntIntPair)this.i.next()).getValue();
+                        public int nextInt() {
+                            return (this.i.next()).getValue();
                         }
 
                         public void remove() {
@@ -240,7 +238,7 @@ public abstract class AbstractIntIntMap implements IntIntMap {
             sb.append('{');
 
             while(true) {
-                IntIntPair e = (IntIntPair)i.next();
+                IntIntPair e = i.next();
                 int key = e.getKey();
                 int value = e.getValue();
                 sb.append(key);

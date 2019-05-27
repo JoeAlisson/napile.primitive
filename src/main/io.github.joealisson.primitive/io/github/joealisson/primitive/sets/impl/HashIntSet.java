@@ -104,7 +104,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 */
 	public HashIntSet()
 	{
-		map = new HashIntObjectMap<Object>();
+		map = new HashIntObjectMap<>();
 	}
 
 	/**
@@ -116,9 +116,8 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 * @param c the collection whose elements are to be placed into this set
 	 * @throws NullPointerException if the specified collection is null
 	 */
-	public HashIntSet(IntCollection c)
-	{
-		map = new HashIntObjectMap<Object>(Math.max((int) (c.size() / .75f) + 1, 16));
+	public HashIntSet(IntCollection c) {
+		this(Math.max((int) (c.size() / .75f) + 1, 16));
 		addAll(c);
 	}
 
@@ -133,7 +132,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 */
 	public HashIntSet(int initialCapacity, float loadFactor)
 	{
-		map = new HashIntObjectMap<Object>(initialCapacity, loadFactor);
+		map = new HashIntObjectMap<>(initialCapacity, loadFactor);
 	}
 
 	/**
@@ -146,7 +145,7 @@ public class HashIntSet extends AbstractIntSet implements IntSet, Cloneable, jav
 	 */
 	public HashIntSet(int initialCapacity)
 	{
-		map = new HashIntObjectMap<Object>(initialCapacity);
+		map = new HashIntObjectMap<>(initialCapacity);
 	}
 
 	/**

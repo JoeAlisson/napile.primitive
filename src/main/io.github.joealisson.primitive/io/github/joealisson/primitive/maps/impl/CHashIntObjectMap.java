@@ -26,17 +26,9 @@ package io.github.joealisson.primitive.maps.impl;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.AbstractCollection;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.IntConsumer;
 
 import io.github.joealisson.primitive.pair.IntObjectPair;
 import io.github.joealisson.primitive.pair.impl.IntObjectPairImpl;
@@ -46,6 +38,8 @@ import io.github.joealisson.primitive.maps.IntObjectMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntObjectMap;
 import io.github.joealisson.primitive.sets.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
+
+import static java.util.Objects.*;
 
 /**
  * <p>
@@ -1286,7 +1280,7 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 
 	final class KeyIterator extends HashIterator implements IntIterator
 	{
-		public int next()
+		public int nextInt()
 		{
 			return super.nextEntry().key;
 		}
@@ -1342,6 +1336,62 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		}
 	}
 
+	final class  KeySpliterator  implements Spliterator.OfInt {
+
+		private final Segment segment;
+		private final int segmentIndex;
+		private int nextIndex;
+		private HashEntry nextEntry;
+
+
+		public KeySpliterator(Segment segment, int segmentIndex) {
+			this.segment = segment;
+			this.segmentIndex = segmentIndex;
+			nextIndex = segment.table.length -1;
+		}
+
+		@Override
+		public OfInt trySplit() {
+			int nextIndex = segmentIndex -1;
+			return nextIndex < 0 ?  null : new KeySpliterator(CHashIntObjectMap.this.segments[nextIndex], nextIndex);
+		}
+
+		@Override
+		public long estimateSize() {
+			return segment.count;
+		}
+
+		@Override
+		public int characteristics() {
+			return Spliterator.DISTINCT | Spliterator.CONCURRENT | Spliterator.NONNULL;
+		}
+
+		@Override
+		public boolean tryAdvance(IntConsumer action) {
+			requireNonNull(action);
+			HashEntry entry = nextEntry();
+			if(isNull(entry)) {
+				return false;
+			}
+			action.accept(entry.key);
+			return true;
+		}
+
+		private HashEntry nextEntry() {
+			try {
+				segment.lock();
+				while (nextIndex >= 0) {
+					if (nonNull(nextEntry = segment.table[nextIndex--])) {
+						return nextEntry;
+					}
+				}
+			} finally {
+				segment.unlock();
+			}
+			return null;
+		}
+	}
+
 	final class KeySet extends AbstractIntSet
 	{
 		public IntIterator iterator()
@@ -1367,6 +1417,12 @@ public class CHashIntObjectMap<V> extends AbstractIntObjectMap<V> implements CIn
 		public void clear()
 		{
 			CHashIntObjectMap.this.clear();
+		}
+
+		@Override
+		public Spliterator.OfInt spliterator() {
+			int index = segments.length -1;
+			return CHashIntObjectMap.this.new KeySpliterator(segments[index], index);
 		}
 	}
 

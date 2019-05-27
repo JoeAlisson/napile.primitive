@@ -16,11 +16,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.AbstractSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.IntConsumer;
+
+import static java.util.Objects.*;
 
 public class CHashIntIntMap extends AbstractIntIntMap implements CIntIntMap, Serializable {
     static final int DEFAULT_INITIAL_CAPACITY = 16;
@@ -455,6 +455,12 @@ public class CHashIntIntMap extends AbstractIntIntMap implements CIntIntMap, Ser
         public void clear() {
             CHashIntIntMap.this.clear();
         }
+
+        @Override
+        public Spliterator.OfInt spliterator() {
+            int index = segments.length -1;
+            return CHashIntIntMap.this.new KeySpliterator(segments[index], index);
+        }
     }
 
     final class EntryIterator extends CHashIntIntMap.HashIterator implements Iterator<IntIntPair> {
@@ -485,7 +491,7 @@ public class CHashIntIntMap extends AbstractIntIntMap implements CIntIntMap, Ser
             super();
         }
 
-        public int next() {
+        public int nextInt() {
             return super.nextEntry().value;
         }
     }
@@ -495,8 +501,64 @@ public class CHashIntIntMap extends AbstractIntIntMap implements CIntIntMap, Ser
             super();
         }
 
-        public int next() {
+        public int nextInt() {
             return super.nextEntry().key;
+        }
+    }
+
+    final class  KeySpliterator  implements Spliterator.OfInt {
+
+        private final Segment segment;
+        private final int segmentIndex;
+        private int nextIndex;
+        private HashEntry nextEntry;
+
+
+        public KeySpliterator(Segment segment, int segmentIndex) {
+            this.segment = segment;
+            this.segmentIndex = segmentIndex;
+            nextIndex = segment.table.length -1;
+        }
+
+        @Override
+        public OfInt trySplit() {
+            int nextIndex = segmentIndex -1;
+            return nextIndex < 0 ?  null : new KeySpliterator(CHashIntIntMap.this.segments[nextIndex], nextIndex);
+        }
+
+        @Override
+        public long estimateSize() {
+            return segment.count;
+        }
+
+        @Override
+        public int characteristics() {
+            return Spliterator.DISTINCT | Spliterator.CONCURRENT | Spliterator.NONNULL;
+        }
+
+        @Override
+        public boolean tryAdvance(IntConsumer action) {
+            requireNonNull(action);
+            HashEntry entry = nextEntry();
+            if(isNull(entry)) {
+                return false;
+            }
+            action.accept(entry.key);
+            return true;
+        }
+
+        private HashEntry nextEntry() {
+            try {
+                segment.lock();
+                while (nextIndex >= 0) {
+                    if (nonNull(nextEntry = segment.table[nextIndex--])) {
+                        return nextEntry;
+                    }
+                }
+            } finally {
+                segment.unlock();
+            }
+            return null;
         }
     }
 

@@ -24,14 +24,10 @@
  */
 package io.github.joealisson.primitive.collections.abstracts;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import io.github.joealisson.primitive.collections.IntCollection;
 import io.github.joealisson.primitive.iterators.IntIterator;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import java.util.Arrays;
 
 /**
  * <p>
@@ -67,6 +63,7 @@ import static java.util.Objects.nonNull;
  *
  * @author Josh Bloch
  * @author Neal Gafter
+ * @author Alisson Oliveira
  * @version %I%, %G%
  * @see IntCollection
  * @since 1.0.0
@@ -77,20 +74,10 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
-	protected AbstractIntCollection()
-	{
+	protected AbstractIntCollection() {
 	}
 
 	// Query Operations
-
-	/**
-	 * Returns an iterator over the elements contained in this collection.
-	 *
-	 * @return an iterator over the elements contained in this collection
-	 */
-	public abstract IntIterator iterator();
-
-	public abstract int size();
 
 	/**
 	 * {@inheritDoc}
@@ -109,17 +96,13 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public boolean contains(int o)
-	{
+	public boolean contains(int o) {
 		IntIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(o == e.next())
-			{
+		while(e.hasNext()) {
+			if(o == e.nextInt()) {
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -149,13 +132,11 @@ public abstract class AbstractIntCollection implements IntCollection
 		// Estimate size of array; be prepared to see more or fewer elements
 		int[] r = new int[size()];
 		IntIterator it = iterator();
-		for(int i = 0; i < r.length; i++)
-		{
-			if(!it.hasNext())	// fewer elements than expected
-			{
+		for(int i = 0; i < r.length; i++) {
+			if(!it.hasNext()) {	// fewer elements than expected
 				return Arrays.copyOf(r, i);
 			}
-			r[i] = it.next();
+			r[i] = it.nextInt();
 		}
 		return it.hasNext() ? finishToArray(r, it) : r;
 	}
@@ -186,25 +167,21 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws ArrayStoreException  {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public int[] toArray(int[] a)
-	{
+	public int[] toArray(int[] a) {
 		// Estimate size of array; be prepared to see more or fewer elements
 		int size = size();
 		int[] r = a.length >= size ? a : new int[size];
 		IntIterator it = iterator();
 
-		for(int i = 0; i < r.length; i++)
-		{
-			if(!it.hasNext())
-			{ // fewer elements than expected
-				if(a != r)
-				{
+		for(int i = 0; i < r.length; i++) {
+			if(!it.hasNext()) { // fewer elements than expected
+				if(a != r) {
 					return Arrays.copyOf(r, i);
 				}
 				r[i] = 0; // null-terminate
 				return r;
 			}
-			r[i] = it.next();
+			r[i] = it.nextInt();
 		}
 		return it.hasNext() ? finishToArray(r, it) : r;
 	}
@@ -219,29 +196,30 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @return array containing the elements in the given array, plus any
 	 *         further elements returned by the iterator, trimmed to size
 	 */
-	private static int[] finishToArray(int[] r, IntIterator it)
-	{
+	private static int[] finishToArray(int[] r, IntIterator it) {
 		int i = r.length;
-		while(it.hasNext())
-		{
+		while(it.hasNext()) {
 			int cap = r.length;
-			if(i == cap)
-			{
-				int newCap = ((cap / 2) + 1) * 3;
-				if(newCap <= cap)
-				{ // integer overflow
-					if(cap == Integer.MAX_VALUE)
-					{
-						throw new OutOfMemoryError("Required array size too large");
-					}
-					newCap = Integer.MAX_VALUE;
-				}
+			if(i == cap) {
+				int newCap = increaseCapacity(cap);
 				r = Arrays.copyOf(r, newCap);
 			}
-			r[i++] = it.next();
+			r[i++] = it.nextInt();
 		}
 		// trim if overallocated
 		return (i == r.length) ? r : Arrays.copyOf(r, i);
+	}
+
+	private static int increaseCapacity(int cap) {
+		int newCap = ((cap / 2) + 1) * 3;
+		if(newCap <= cap) {
+			// integer overflow
+			if(cap == Integer.MAX_VALUE) {
+				throw new OutOfMemoryError("Required array size too large");
+			}
+			newCap = Integer.MAX_VALUE;
+		}
+		return newCap;
 	}
 
 	// Modification Operations
@@ -257,8 +235,7 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 * @throws IllegalStateException		 {@inheritDoc}
 	 */
-	public boolean add(int e)
-	{
+	public boolean add(int e) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -277,18 +254,14 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
 	 */
-	public boolean remove(int o)
-	{
+	public boolean remove(int o) {
 		IntIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(o == e.next())
-			{
+		while(e.hasNext()) {
+			if(o == e.nextInt()) {
 				e.remove();
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -306,13 +279,10 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws NullPointerException {@inheritDoc}
 	 * @see #contains(int)
 	 */
-	public boolean containsAll(IntCollection c)
-	{
+	public boolean containsAll(IntCollection c) {
 		IntIterator e = c.iterator();
-		while(e.hasNext())
-		{
-			if(!contains(e.next()))
-			{
+		while(e.hasNext()) {
+			if(!contains(e.nextInt())) {
 				return false;
 			}
 		}
@@ -335,16 +305,11 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @throws IllegalStateException		 {@inheritDoc}
 	 * @see #add(int)
 	 */
-	public boolean addAll(IntCollection c)
-	{
+	public boolean addAll(IntCollection c) {
 		boolean modified = false;
 		IntIterator e = c.iterator();
-		while(e.hasNext())
-		{
-			if(add(e.next()))
-			{
-				modified = true;
-			}
+		while(e.hasNext()) {
+			modified |= add(e.nextInt());
 		}
 		return modified;
 	}
@@ -394,14 +359,11 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @see #remove(int)
 	 * @see #contains(int)
 	 */
-	public boolean removeAll(IntCollection c)
-	{
+	public boolean removeAll(IntCollection c) {
 		boolean modified = false;
 		IntIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(c.contains(e.next()))
-			{
+		while(e.hasNext()) {
+			if(c.contains(e.nextInt())) {
 				e.remove();
 				modified = true;
 			}
@@ -428,14 +390,11 @@ public abstract class AbstractIntCollection implements IntCollection
 	 * @see #remove(int)
 	 * @see #contains(int)
 	 */
-	public boolean retainAll(IntCollection c)
-	{
+	public boolean retainAll(IntCollection c) {
 		boolean modified = false;
 		IntIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(!c.contains(e.next()))
-			{
+		while(e.hasNext()) {
+			if(!c.contains(e.nextInt())) {
 				e.remove();
 				modified = true;
 			}
@@ -457,16 +416,13 @@ public abstract class AbstractIntCollection implements IntCollection
 	 *
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 */
-	public void clear()
-	{
+	public void clear() {
 		IntIterator e = iterator();
-		while(e.hasNext())
-		{
-			e.next();
+		while(e.hasNext()) {
+			e.nextInt();
 			e.remove();
 		}
 	}
-
 
 	//  String conversion
 
@@ -480,22 +436,18 @@ public abstract class AbstractIntCollection implements IntCollection
 	 *
 	 * @return a string representation of this collection
 	 */
-	public String toString()
-	{
+	public String toString() {
 		IntIterator i = iterator();
-		if(!i.hasNext())
-		{
+		if(!i.hasNext()) {
 			return "[]";
 		}
 
 		StringBuilder sb = new StringBuilder();
 		sb.append('[');
-		for(; ;)
-		{
-			int e = i.next();
+		for(; ;) {
+			int e = i.nextInt();
 			sb.append(e);
-			if(!i.hasNext())
-			{
+			if(!i.hasNext()) {
 				return sb.append(']').toString();
 			}
 			sb.append(", ");

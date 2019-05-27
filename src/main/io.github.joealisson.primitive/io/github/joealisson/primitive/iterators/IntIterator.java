@@ -25,8 +25,7 @@
 package io.github.joealisson.primitive.iterators;
 
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
+import java.util.PrimitiveIterator;
 import java.util.function.IntConsumer;
 
 /**
@@ -51,7 +50,7 @@ import java.util.function.IntConsumer;
  * @see Iterable
  * @since 1.0.0
  */
-public interface IntIterator
+public interface IntIterator extends PrimitiveIterator.OfInt
 {
 	/**
 	 * Returns {@code true} if the iteration has more elements.
@@ -63,13 +62,15 @@ public interface IntIterator
 	boolean hasNext();
 
 	/**
-	 * Returns the next element in the iteration.
 	 *
-	 * @return the next element in the iteration
-	 * @throws java.util.NoSuchElementException
-	 *          if the iteration has no more elements
+	 * {@inheritDoc}
+	 *
+	 * *Note Use {@link #nextInt()} instead. This method is implemented just to keep contract of Iterator
 	 */
-	int next();
+	@Deprecated
+	default Integer next() {
+		return nextInt();
+	}
 
 	/**
 	 * Removes from the underlying collection the last element returned
@@ -111,7 +112,7 @@ public interface IntIterator
 	default void forEach(IntConsumer action) {
 		Objects.requireNonNull(action);
 		while (hasNext()) {
-			action.accept(next());
+			action.accept(nextInt());
 		}
 	}
 }

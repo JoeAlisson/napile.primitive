@@ -75,17 +75,16 @@ import io.github.joealisson.primitive.lists.IntList;
  *
  * @author Josh Bloch
  * @author Neal Gafter
+ * @author Alisson Oliveira
  * @version %I%, %G%
  * @since 1.0.0
  */
-public abstract class AbstractIntList extends AbstractIntCollection implements IntList
-{
+public abstract class AbstractIntList extends AbstractIntCollection implements IntList {
 	/**
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
-	protected AbstractIntList()
-	{
+	protected AbstractIntList() {
 	}
 
 	/**
@@ -117,21 +116,13 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws IllegalArgumentException	  if some property of this element
 	 *                                       prevents it from being added to this list
 	 */
-	public boolean add(int e)
-	{
+	public boolean add(int e) {
 		add(size(), e);
 		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 *
-	 * @throws IndexOutOfBoundsException {@inheritDoc}
-	 */
-	abstract public int get(int index);
-
-	/**
-	 * {@inheritDoc}
 	 * <p>This implementation always throws an
 	 * {@code UnsupportedOperationException}.
 	 *
@@ -141,8 +132,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 * @throws IndexOutOfBoundsException	 {@inheritDoc}
 	 */
-	public int set(int index, int element)
-	{
+	public int set(int index, int element) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -157,8 +147,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 * @throws IndexOutOfBoundsException	 {@inheritDoc}
 	 */
-	public void add(int index, int element)
-	{
+	public void add(int index, int element) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -170,11 +159,9 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 * @throws IndexOutOfBoundsException	 {@inheritDoc}
 	 */
-	public int removeByIndex(int index)
-	{
+	public int removeByIndex(int index) {
 		throw new UnsupportedOperationException();
 	}
-
 
 	// Search Operations
 
@@ -187,13 +174,10 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public int indexOf(int o)
-	{
+	public int indexOf(int o) {
 		IntListIterator e = listIterator();
-		while(e.hasNext())
-		{
-			if(o == e.next())
-			{
+		while(e.hasNext()) {
+			if(o == e.nextInt()) {
 				return e.previousIndex();
 			}
 		}
@@ -210,22 +194,17 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public int lastIndexOf(int o)
-	{
+	public int lastIndexOf(int o) {
 		IntListIterator e = listIterator(size());
-		while(e.hasPrevious())
-		{
-			if(o == e.previous())
-			{
+		while(e.hasPrevious()) {
+			if(o == e.previous()) {
 				return e.nextIndex();
 			}
 		}
-		return -1;
-	}
+		return -1; }
 
 
 	// Bulk Operations
-
 	/**
      * <p>
 	 * Removes all of the elements from this list (optional operation).
@@ -241,8 +220,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws UnsupportedOperationException if the {@code clear} operation
 	 *                                       is not supported by this list
 	 */
-	public void clear()
-	{
+	public void clear() {
 		removeRange(0, size());
 	}
 
@@ -264,18 +242,14 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 * @throws IndexOutOfBoundsException	 {@inheritDoc}
 	 */
-	public boolean addAll(int index, IntCollection c)
-	{
-		boolean modified = false;
+	public boolean addAll(int index, IntCollection c) {
 		IntIterator e = c.iterator();
-		while(e.hasNext())
-		{
-			add(index++, e.next());
-			modified = true;
+		boolean modified = e.hasNext();
+		while(e.hasNext()) {
+			add(index++, e.nextInt());
 		}
 		return modified;
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -305,9 +279,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 		return true;
 	}
 
-
 	// Iterators
-
 	/**
      * <p>
 	 * Returns an iterator over the elements in this list in proper sequence.
@@ -328,8 +300,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @return an iterator over the elements in this list in proper sequence
 	 * @see #modCount
 	 */
-	public IntIterator iterator()
-	{
+	public IntIterator iterator() {
 		return new Itr();
 	}
 
@@ -339,8 +310,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 *
 	 * @see #listIterator(int)
 	 */
-	public IntListIterator listIterator()
-	{
+	public IntListIterator listIterator() {
 		return listIterator(0);
 	}
 
@@ -366,18 +336,15 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 * @see #modCount
 	 */
-	public IntListIterator listIterator(final int index)
-	{
-		if(index < 0 || index > size())
-		{
+	public IntListIterator listIterator(final int index) {
+		if(index < 0 || index > size()) {
 			throw new IndexOutOfBoundsException("Index: " + index);
 		}
 
 		return new ListItr(index);
 	}
 
-	private class Itr implements IntIterator
-	{
+	private class Itr implements IntIterator {
 		/**
 		 * Index of element to be returned by subsequent call to next.
 		 */
@@ -397,130 +364,104 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 		 */
 		int expectedModCount = modCount;
 
-		public boolean hasNext()
-		{
+		public boolean hasNext() {
 			return cursor != size();
 		}
 
-		public int next()
-		{
+		public int nextInt() {
 			checkForComodification();
-			try
-			{
+			try {
 				int next = get(cursor);
 				lastRet = cursor++;
 				return next;
 			}
-			catch(IndexOutOfBoundsException e)
-			{
+			catch(IndexOutOfBoundsException e) {
 				checkForComodification();
 				throw new NoSuchElementException();
 			}
 		}
 
-		public void remove()
-		{
-			if(lastRet == -1)
-			{
+		public void remove() {
+			if(lastRet == -1) {
 				throw new IllegalStateException();
 			}
 			checkForComodification();
 
-			try
-			{
+			try {
 				AbstractIntList.this.remove(lastRet);
-				if(lastRet < cursor)
-				{
+				if(lastRet < cursor) {
 					cursor--;
 				}
 				lastRet = -1;
 				expectedModCount = modCount;
 			}
-			catch(IndexOutOfBoundsException e)
-			{
+			catch(IndexOutOfBoundsException e) {
 				throw new ConcurrentModificationException();
 			}
 		}
 
-		final void checkForComodification()
-		{
-			if(modCount != expectedModCount)
-			{
+		final void checkForComodification() {
+			if(modCount != expectedModCount) {
 				throw new ConcurrentModificationException();
 			}
 		}
 	}
 
-	private class ListItr extends Itr implements IntListIterator
-	{
-		ListItr(int index)
-		{
+	private class ListItr extends Itr implements IntListIterator {
+		ListItr(int index) {
 			cursor = index;
 		}
 
-		public boolean hasPrevious()
-		{
+		public boolean hasPrevious() {
 			return cursor != 0;
 		}
 
-		public int previous()
-		{
+		public int previous() {
 			checkForComodification();
-			try
-			{
+			try {
 				int i = cursor - 1;
 				int previous = get(i);
 				lastRet = cursor = i;
 				return previous;
 			}
-			catch(IndexOutOfBoundsException e)
-			{
+			catch(IndexOutOfBoundsException e) {
 				checkForComodification();
 				throw new NoSuchElementException();
 			}
 		}
 
-		public int nextIndex()
-		{
+		public int nextIndex() {
 			return cursor;
 		}
 
-		public int previousIndex()
-		{
+		public int previousIndex() {
 			return cursor - 1;
 		}
 
-		public void set(int e)
-		{
-			if(lastRet == -1)
-			{
+		public void set(int e) {
+			if(lastRet == -1) {
 				throw new IllegalStateException();
 			}
 			checkForComodification();
 
-			try
-			{
+			try {
 				AbstractIntList.this.set(lastRet, e);
 				expectedModCount = modCount;
 			}
-			catch(IndexOutOfBoundsException ex)
-			{
+			catch(IndexOutOfBoundsException ex) {
 				throw new ConcurrentModificationException();
 			}
 		}
 
-		public void add(int e)
-		{
+		public void add(int e) {
 			checkForComodification();
 
-			try
-			{
+			try {
 				AbstractIntList.this.add(cursor++, e);
 				lastRet = -1;
 				expectedModCount = modCount;
 			}
-			catch(IndexOutOfBoundsException ex)
-			{
+			catch(IndexOutOfBoundsException ex) {
 				throw new ConcurrentModificationException();
 			}
 		}
@@ -560,8 +501,7 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @throws IllegalArgumentException  if the endpoint indices are out of order
 	 *                                   {@code (fromIndex > toIndex)}
 	 */
-	public IntList subList(int fromIndex, int toIndex)
-	{
+	public IntList subList(int fromIndex, int toIndex) {
 		return (this instanceof RandomAccess ? new RandomAccessSubIntList(this, fromIndex, toIndex) : new SubIntList(this, fromIndex, toIndex));
 	}
 
@@ -589,25 +529,20 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @param o the object to be compared for equality with this list
 	 * @return {@code true} if the specified object is equal to this list
 	 */
-	public boolean equals(Object o)
-	{
-		if(o == this)
-		{
+	public boolean equals(Object o) {
+		if(o == this) {
 			return true;
 		}
-		if(!(o instanceof IntList))
-		{
+		if(!(o instanceof IntList)) {
 			return false;
 		}
 
 		IntListIterator e1 = listIterator();
 		IntListIterator e2 = ((IntList) o).listIterator();
-		while(e1.hasNext() && e2.hasNext())
-		{
-			int o1 = e1.next();
-			int o2 = e2.next();
-			if(o1 != o2)
-			{
+		while(e1.hasNext() && e2.hasNext()) {
+			int o1 = e1.nextInt();
+			int o2 = e2.nextInt();
+			if(o1 != o2) {
 				return false;
 			}
 		}
@@ -624,13 +559,12 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 *
 	 * @return the hash code value for this list
 	 */
-	public int hashCode()
-	{
+	public int hashCode() {
 		int hashCode = 1;
 		IntIterator i = iterator();
 		while(i.hasNext())
 		{
-			int obj = i.next();
+			int obj = i.nextInt();
 			hashCode = 31 * hashCode + obj;
 		}
 		return hashCode;
@@ -660,12 +594,11 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	 * @param fromIndex index of first element to be removed
 	 * @param toIndex   index after last element to be removed
 	 */
-	protected void removeRange(int fromIndex, int toIndex)
-	{
+	protected void removeRange(int fromIndex, int toIndex) {
 		IntListIterator it = listIterator(fromIndex);
 		for(int i = 0, n = toIndex - fromIndex; i < n; i++)
 		{
-			it.next();
+			it.nextInt();
 			it.remove();
 		}
 	}
@@ -700,25 +633,20 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
 	protected transient int modCount = 0;
 }
 
-class SubIntList extends AbstractIntList
-{
+class SubIntList extends AbstractIntList {
 	private AbstractIntList l;
 	private int offset;
 	private int size;
 	private int expectedModCount;
 
-	SubIntList(AbstractIntList list, int fromIndex, int toIndex)
-	{
-		if(fromIndex < 0)
-		{
+	SubIntList(AbstractIntList list, int fromIndex, int toIndex) {
+		if(fromIndex < 0) {
 			throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
 		}
-		if(toIndex > list.size())
-		{
+		if(toIndex > list.size()) {
 			throw new IndexOutOfBoundsException("toIndex = " + toIndex);
 		}
-		if(fromIndex > toIndex)
-		{
+		if(fromIndex > toIndex) {
 			throw new IllegalArgumentException("fromIndex(" + fromIndex + ") > toIndex(" + toIndex + ")");
 		}
 		l = list;
@@ -727,30 +655,25 @@ class SubIntList extends AbstractIntList
 		expectedModCount = l.modCount;
 	}
 
-	public int set(int index, int element)
-	{
+	public int set(int index, int element) {
 		rangeCheck(index);
 		checkForComodification();
 		return l.set(index + offset, element);
 	}
 
-	public int get(int index)
-	{
+	public int get(int index) {
 		rangeCheck(index);
 		checkForComodification();
 		return l.get(index + offset);
 	}
 
-	public int size()
-	{
+	public int size() {
 		checkForComodification();
 		return size;
 	}
 
-	public void add(int index, int element)
-	{
-		if(index < 0 || index > size)
-		{
+	public void add(int index, int element) {
+		if(index < 0 || index > size) {
 			throw new IndexOutOfBoundsException();
 		}
 		checkForComodification();
@@ -760,8 +683,7 @@ class SubIntList extends AbstractIntList
 		modCount++;
 	}
 
-	public int removeByIndex(int index)
-	{
+	public int removeByIndex(int index) {
 		rangeCheck(index);
 		checkForComodification();
 		int result = l.removeByIndex(index + offset);
@@ -771,8 +693,7 @@ class SubIntList extends AbstractIntList
 		return result;
 	}
 
-	protected void removeRange(int fromIndex, int toIndex)
-	{
+	protected void removeRange(int fromIndex, int toIndex) {
 		checkForComodification();
 		l.removeRange(fromIndex + offset, toIndex + offset);
 		expectedModCount = l.modCount;
@@ -780,20 +701,16 @@ class SubIntList extends AbstractIntList
 		modCount++;
 	}
 
-	public boolean addAll(IntCollection c)
-	{
+	public boolean addAll(IntCollection c) {
 		return addAll(size, c);
 	}
 
-	public boolean addAll(int index, IntCollection c)
-	{
-		if(index < 0 || index > size)
-		{
+	public boolean addAll(int index, IntCollection c) {
+		if(index < 0 || index > size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
 		int cSize = c.size();
-		if(cSize == 0)
-		{
+		if(cSize == 0) {
 			return false;
 		}
 
@@ -814,8 +731,7 @@ class SubIntList extends AbstractIntList
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
 		int cSize = items.length;
-		if(cSize == 0)
-		{
+		if(cSize == 0) {
 			return false;
 		}
 
@@ -833,16 +749,13 @@ class SubIntList extends AbstractIntList
 		return listIterator();
 	}
 
-	public IntListIterator listIterator(final int index)
-	{
+	public IntListIterator listIterator(final int index) {
 		checkForComodification();
-		if(index < 0 || index > size)
-		{
+		if(index < 0 || index > size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
 
-		return new IntListIterator()
-		{
+		return new IntListIterator() {
 			private IntListIterator i = l.listIterator(index + offset);
 
 			public boolean hasNext()
@@ -850,14 +763,10 @@ class SubIntList extends AbstractIntList
 				return nextIndex() < size;
 			}
 
-			public int next()
-			{
-				if(hasNext())
-				{
-					return i.next();
-				}
-				else
-				{
+			public int nextInt() {
+				if(hasNext()) {
+					return i.nextInt();
+				} else {
 					throw new NoSuchElementException();
 				}
 			}
@@ -867,14 +776,10 @@ class SubIntList extends AbstractIntList
 				return previousIndex() >= 0;
 			}
 
-			public int previous()
-			{
-				if(hasPrevious())
-				{
+			public int previous() {
+				if(hasPrevious()) {
 					return i.previous();
-				}
-				else
-				{
+				} else {
 					throw new NoSuchElementException();
 				}
 			}
@@ -889,8 +794,7 @@ class SubIntList extends AbstractIntList
 				return i.previousIndex() - offset;
 			}
 
-			public void remove()
-			{
+			public void remove() {
 				i.remove();
 				expectedModCount = l.modCount;
 				size--;
@@ -902,8 +806,7 @@ class SubIntList extends AbstractIntList
 				i.set(e);
 			}
 
-			public void add(int e)
-			{
+			public void add(int e) {
 				i.add(e);
 				expectedModCount = l.modCount;
 				size++;
@@ -917,25 +820,20 @@ class SubIntList extends AbstractIntList
 		return new SubIntList(this, fromIndex, toIndex);
 	}
 
-	private void rangeCheck(int index)
-	{
-		if(index < 0 || index >= size)
-		{
+	private void rangeCheck(int index) {
+		if(index < 0 || index >= size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ",Size: " + size);
 		}
 	}
 
-	private void checkForComodification()
-	{
-		if(l.modCount != expectedModCount)
-		{
+	private void checkForComodification() {
+		if(l.modCount != expectedModCount) {
 			throw new ConcurrentModificationException();
 		}
 	}
 }
 
-class RandomAccessSubIntList extends SubIntList implements RandomAccess
-{
+class RandomAccessSubIntList extends SubIntList implements RandomAccess {
 	RandomAccessSubIntList(AbstractIntList list, int fromIndex, int toIndex)
 	{
 		super(list, fromIndex, toIndex);

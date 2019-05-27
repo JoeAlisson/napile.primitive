@@ -25,6 +25,7 @@
 package io.github.joealisson.primitive.sets.impl;
 
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.github.joealisson.primitive.collections.IntCollection;
@@ -86,8 +87,7 @@ import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
  * @see CArrayIntList
  * @since 1.0.0
  */
-public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
-{
+public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable {
 
 	public static final long serialVersionUID = 8797676090890124019L;
 
@@ -108,8 +108,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 	 * @param c the collection of elements to initially contain
 	 * @throws NullPointerException if the specified collection is null
 	 */
-	public CArrayIntSet(IntCollection c)
-	{
+	public CArrayIntSet(IntCollection c) {
 		al = new CArrayIntList();
 		al.addAllAbsent(c);
 	}
@@ -412,7 +411,7 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 			{
 				return false;
 			}
-			int x = it.next();
+			int x = it.nextInt();
 			for(int i = 0; i < len; ++i)
 			{
 				if(!matched[i] && x == elements[i])
@@ -424,5 +423,10 @@ public class CArrayIntSet extends AbstractIntSet implements java.io.Serializable
 			return false;
 		}
 		return k == len;
+	}
+
+	@Override
+	public Spliterator.OfInt spliterator() {
+		return al.spliterator();
 	}
 }

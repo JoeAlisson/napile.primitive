@@ -4,21 +4,16 @@ import io.github.joealisson.primitive.HashUtils;
 import io.github.joealisson.primitive.Variables;
 import io.github.joealisson.primitive.collections.DoubleCollection;
 import io.github.joealisson.primitive.collections.IntCollection;
-import io.github.joealisson.primitive.collections.LongCollection;
 import io.github.joealisson.primitive.collections.abstracts.AbstractDoubleCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.DoubleIterator;
 import io.github.joealisson.primitive.iterators.IntIterator;
-import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.maps.IntDoubleMap;
 import io.github.joealisson.primitive.maps.IntLongMap;
 import io.github.joealisson.primitive.maps.IntObjectMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntDoubleMap;
-import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
 import io.github.joealisson.primitive.pair.IntDoublePair;
 import io.github.joealisson.primitive.pair.IntLongPair;
 import io.github.joealisson.primitive.pair.impl.IntDoublePairImpl;
-import io.github.joealisson.primitive.pair.impl.IntLongPairImpl;
 import io.github.joealisson.primitive.sets.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
@@ -961,7 +956,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 	private final class KeyIterator extends HashIntIterator
 	{
-		public int next()
+		public int nextInt()
 		{
 			return nextEntry().getKey();
 		}

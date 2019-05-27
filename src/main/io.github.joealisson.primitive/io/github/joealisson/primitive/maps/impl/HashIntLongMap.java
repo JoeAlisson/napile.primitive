@@ -982,7 +982,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 
 	private final class KeyIterator extends HashIntIterator
 	{
-		public int next()
+		public int nextInt()
 		{
 			return nextEntry().getKey();
 		}

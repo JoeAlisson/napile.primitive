@@ -54,23 +54,14 @@ import io.github.joealisson.primitive.sets.IntSet;
  *
  * @author Josh Bloch
  * @author Neal Gafter
+ * @author Alisson Oliveira
  * @version %I%, %G%
  * @see IntCollection
  * @see AbstractIntCollection
  * @see IntSet
  * @since 1.0.0
  */
-public abstract class AbstractIntSet extends AbstractIntCollection implements IntSet
-{
-	/**
-	 * Sole constructor.  (For invocation by subclass constructors, typically
-	 * implicit.)
-	 */
-	public AbstractIntSet()
-	{
-	}
-
-	// Comparison and hashing
+public abstract class AbstractIntSet extends AbstractIntCollection implements IntSet {
 
 	/**
 	 * <p>
@@ -90,32 +81,22 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @param o object to be compared for equality with this set
 	 * @return true if the specified object is equal to this set
 	 */
-	public boolean equals(Object o)
-	{
-		if(o == this)
-		{
+	public boolean equals(Object o) {
+		if(o == this) {
 			return true;
 		}
 
-		if(!(o instanceof IntSet))
-		{
+		if(!(o instanceof IntSet)) {
 			return false;
 		}
 		IntCollection c = (IntCollection) o;
-		if(c.size() != size())
-		{
+		if(c.size() != size()) {
 			return false;
 		}
-		try
-		{
+		try {
 			return containsAll(c);
 		}
-		catch(ClassCastException unused)
-		{
-			return false;
-		}
-		catch(NullPointerException unused)
-		{
+		catch(ClassCastException | NullPointerException unused) {
 			return false;
 		}
 	}
@@ -138,13 +119,11 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @see Object#equals(Object)
 	 * @see IntSet#equals(Object)
 	 */
-	public int hashCode()
-	{
+	public int hashCode() {
 		int h = 0;
 		IntIterator i = iterator();
-		while(i.hasNext())
-		{
-			int obj = i.next();
+		while(i.hasNext()) {
+			int obj = i.nextInt();
 			h += obj;
 		}
 		return h;
@@ -186,23 +165,17 @@ public abstract class AbstractIntSet extends AbstractIntCollection implements In
 	 * @see #remove(int)
 	 * @see #contains(int)
 	 */
-	public boolean removeAll(IntCollection c)
-	{
+	public boolean removeAll(IntCollection c) {
 		boolean modified = false;
 
-		if(size() > c.size())
-		{
-			for(IntIterator i = c.iterator(); i.hasNext();)
-			{
-				modified |= remove(i.next());
+		if(size() > c.size()) {
+			for(IntIterator i = c.iterator(); i.hasNext();) {
+				modified |= remove(i.nextInt());
 			}
 		}
-		else
-		{
-			for(IntIterator i = iterator(); i.hasNext();)
-			{
-				if(c.contains(i.next()))
-				{
+		else {
+			for(IntIterator i = iterator(); i.hasNext();) {
+				if(c.contains(i.nextInt())) {
 					i.remove();
 					modified = true;
 				}

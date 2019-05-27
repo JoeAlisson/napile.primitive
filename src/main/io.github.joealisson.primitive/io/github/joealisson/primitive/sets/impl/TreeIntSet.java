@@ -559,7 +559,7 @@ public class TreeIntSet extends AbstractIntSet implements NavigableIntSet, Clone
         // Write out all elements in the proper order.
         for(IntIterator i = m.keySet().iterator(); i.hasNext();)
         {
-            s.writeInt(i.next());
+            s.writeInt(i.nextInt());
         }
     }
 

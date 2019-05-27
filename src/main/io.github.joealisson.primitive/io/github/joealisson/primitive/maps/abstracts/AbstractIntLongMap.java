@@ -111,12 +111,8 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public boolean containsValue(long value)
 	{
-		Iterator<IntLongPair> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			IntLongPair e = i.next();
-			if(value == e.getValue())
-			{
+		for (IntLongPair e : entrySet()) {
+			if (value == e.getValue()) {
 				return true;
 			}
 		}
@@ -137,11 +133,8 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 */
 	public boolean containsKey(int key)
 	{
-		Iterator<IntLongPair> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			IntLongPair e = i.next();
-			if(key == e.getKey())
+		for (IntLongPair e : entrySet()) {
+			if (key == e.getKey())
 				return true;
 		}
 		return false;
@@ -299,16 +292,11 @@ public abstract class AbstractIntLongMap implements IntLongMap
 	 * is performed, so there is a slight chance that multiple calls to this
 	 * method will not all return the same set.
 	 */
-	public IntSet keySet()
-	{
-		if(keySet == null)
-		{
-			keySet = new AbstractIntSet()
-			{
-				public IntIterator iterator()
-				{
-					return new IntIterator()
-					{
+	public IntSet keySet() {
+		if(keySet == null) {
+			keySet = new AbstractIntSet() {
+				public IntIterator iterator() {
+					return new IntIterator() {
 						private Iterator<IntLongPair> i = entrySet().iterator();
 
 						public boolean hasNext()
@@ -316,7 +304,7 @@ public abstract class AbstractIntLongMap implements IntLongMap
 							return i.hasNext();
 						}
 
-						public int next()
+						public int nextInt()
 						{
 							return i.next().getKey();
 						}
@@ -445,21 +433,13 @@ public abstract class AbstractIntLongMap implements IntLongMap
 
 		try
 		{
-			Iterator<IntLongPair> i = entrySet().iterator();
-			while(i.hasNext())
-			{
-				IntLongPair e = i.next();
+			for (IntLongPair e : entrySet()) {
 				int key = e.getKey();
 				long value = e.getValue();
-				if(value != m.get(key))
-				{
+				if (value != m.get(key)) {
 					return false;
 				}
 			}
-		}
-		catch(ClassCastException unused)
-		{
-			return false;
 		}
 		catch(NullPointerException unused)
 		{

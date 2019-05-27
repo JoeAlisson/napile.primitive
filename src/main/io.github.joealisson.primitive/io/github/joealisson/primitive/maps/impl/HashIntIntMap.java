@@ -509,7 +509,7 @@ public class HashIntIntMap extends AbstractIntIntMap implements IntIntMap, Clone
             super();
         }
 
-        public int next() {
+        public int nextInt() {
             return this.nextEntry().getKey();
         }
     }
@@ -519,7 +519,7 @@ public class HashIntIntMap extends AbstractIntIntMap implements IntIntMap, Clone
             super();
         }
 
-        public int next() {
+        public int nextInt() {
             return this.nextEntry().getValue();
         }
     }

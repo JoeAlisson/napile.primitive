@@ -951,7 +951,7 @@ public class HashIntObjectMap<V> extends AbstractIntObjectMap<V> implements IntO
 
 	private final class KeyIterator extends HashIntIterator
 	{
-		public int next()
+		public int nextInt()
 		{
 			return nextEntry().getKey();
 		}

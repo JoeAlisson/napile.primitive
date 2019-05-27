@@ -1450,7 +1450,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			super(first);
 		}
 
-		public int next()
+		public int nextInt()
 		{
 			return nextEntry().key;
 		}
@@ -1464,7 +1464,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 		}
 
 		@Override
-		public int next()
+		public int nextInt()
 		{
 			return prevEntry().key;
 		}
@@ -2062,7 +2062,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 				super(first, fence);
 			}
 
-			public int next()
+			public int nextInt()
 			{
 				return nextEntry().key;
 			}
@@ -2098,7 +2098,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 				super(last, fence);
 			}
 
-			public int next()
+			public int nextInt()
 			{
 				return prevEntry().key;
 			}
@@ -3059,7 +3059,7 @@ public class TreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements Navi
 			else
 			{
 				IntIterator iterator = (IntIterator) it;
-				key = iterator.next();
+				key = iterator.nextInt();
 				value = defaultVal;
 			}
 		}

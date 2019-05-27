@@ -24,13 +24,14 @@
  */
 package io.github.joealisson.primitive.lists.impl;
 
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.RandomAccess;
+import java.util.*;
+import java.util.function.IntConsumer;
 
 import io.github.joealisson.primitive.collections.IntCollection;
 import io.github.joealisson.primitive.lists.IntList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractIntList;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * <p>
@@ -73,7 +74,7 @@ import io.github.joealisson.primitive.lists.abstracts.AbstractIntList;
  * </p>
  * <p>
  * If no such object exists, the list should be "wrapped" using the
- * {@link java.util.Collections#synchronizedList Collections.synchronizedList}
+ * {@link  Collections#synchronizedList(List)}
  * method.  This is best done at creation time, to prevent accidental
  * unsynchronized access to the list:<pre>
  *   List list = Collections.synchronizedList(new ArrayList(...));</pre>
@@ -102,14 +103,14 @@ import io.github.joealisson.primitive.lists.abstracts.AbstractIntList;
  *
  * @author Josh Bloch
  * @author Neal Gafter
+ * @author Alisson Oliveira
  * @version %I%, %G%
  * @see	 IntCollection
  * @see	 IntList
  * @since 1.0.0
  */
 
-public class ArrayIntList extends AbstractIntList implements IntList, RandomAccess, Cloneable, java.io.Serializable
-{
+public class ArrayIntList extends AbstractIntList implements IntList, RandomAccess, Cloneable, java.io.Serializable {
 
 	public static final long serialVersionUID = 875266419699228697L;
 	/**
@@ -132,17 +133,14 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @throws IllegalArgumentException if the specified initial capacity
 	 *                                  is negative
 	 */
-	public ArrayIntList(int initialCapacity)
-	{
-		super();
-		if(initialCapacity < 0)
-		{
+	public ArrayIntList(int initialCapacity) {
+		if(initialCapacity < 0) {
 			throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
 		}
 		this.elementData = new int[initialCapacity];
 	}
 
-	/**
+	/**		super();
 	 * Constructs an empty list with an initial capacity of ten.
 	 */
 	public ArrayIntList()
@@ -158,8 +156,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param c the collection whose elements are to be placed into this list
 	 * @throws NullPointerException if the specified collection is null
 	 */
-	public ArrayIntList(IntCollection c)
-	{
+	public ArrayIntList(IntCollection c) {
 		elementData = c.toArray();
 		size = elementData.length;
 	}
@@ -169,12 +166,10 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * list's current size.  An application can use this operation to minimize
 	 * the storage of an ArrayList instance.
 	 */
-	public void trimToSize()
-	{
+	public void trimToSize() {
 		modCount++;
 		int oldCapacity = elementData.length;
-		if(size < oldCapacity)
-		{
+		if(size < oldCapacity) {
 			elementData = Arrays.copyOf(elementData, size);
 		}
 	}
@@ -186,16 +181,12 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *
 	 * @param minCapacity the desired minimum capacity
 	 */
-	public void ensureCapacity(int minCapacity)
-	{
+	public void ensureCapacity(int minCapacity) {
 		modCount++;
 		int oldCapacity = elementData.length;
-		if(minCapacity > oldCapacity)
-		{
-			int oldData[] = elementData;
+		if(minCapacity > oldCapacity) {
 			int newCapacity = (oldCapacity * 3) / 2 + 1;
-			if(newCapacity < minCapacity)
-			{
+			if(newCapacity < minCapacity) {
 				newCapacity = minCapacity;
 			}
 			// minCapacity is usually close to size, so this is a win:
@@ -244,16 +235,12 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * (o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i))),
 	 * or -1 if there is no such index.
 	 */
-	public int indexOf(int o)
-	{
-		for(int i = 0; i < size; i++)
-		{
-			if(o == elementData[i])
-			{
+	public int indexOf(int o) {
+		for(int i = 0; i < size; i++) {
+			if(o == elementData[i]) {
 				return i;
 			}
 		}
-
 		return -1;
 	}
 
@@ -264,16 +251,12 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * (o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i))),
 	 * or -1 if there is no such index.
 	 */
-	public int lastIndexOf(int o)
-	{
-		for(int i = size - 1; i >= 0; i--)
-		{
-			if(o == elementData[i])
-			{
+	public int lastIndexOf(int o) {
+		for(int i = size - 1; i >= 0; i--) {
+			if(o == elementData[i]) {
 				return i;
 			}
 		}
-
 		return -1;
 	}
 
@@ -283,17 +266,14 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *
 	 * @return a clone of this ArrayList instance
 	 */
-	public Object clone()
-	{
-		try
-		{
+	public Object clone() {
+		try {
 			ArrayIntList v = (ArrayIntList) super.clone();
 			v.elementData = Arrays.copyOf(elementData, size);
 			v.modCount = 0;
 			return v;
 		}
-		catch(CloneNotSupportedException e)
-		{
+		catch(CloneNotSupportedException e) {
 			// this shouldn't happen, since we are Cloneable
 			throw new InternalError();
 		}
@@ -314,8 +294,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return an array containing all of the elements in this list in
 	 *         proper sequence
 	 */
-	public int[] toArray()
-	{
+	public int[] toArray() {
 		return Arrays.copyOf(elementData, size);
 	}
 
@@ -344,15 +323,13 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *                              this list
 	 * @throws NullPointerException if the specified array is null
 	 */
-	public int[] toArray(int[] a)
-	{
-		if(a.length < size)// Make a new array of a's runtime type, but my contents:
+	public int[] toArray(int[] a) {
+		if(a.length < size)// Make a new array but my contents:
 		{
 			return Arrays.copyOf(elementData, size);
 		}
 		System.arraycopy(elementData, 0, a, 0, size);
-		if(a.length > size)
-		{
+		if(a.length > size) {
 			a[size] = 0;
 		}
 		return a;
@@ -367,10 +344,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return the element at the specified position in this list
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public int get(int index)
-	{
+	public int get(int index) {
 		RangeCheck(index);
-
 		return elementData[index];
 	}
 
@@ -383,10 +358,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return the element previously at the specified position
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public int set(int index, int element)
-	{
+	public int set(int index, int element) {
 		RangeCheck(index);
-
 		int oldValue = elementData[index];
 		elementData[index] = element;
 		return oldValue;
@@ -398,8 +371,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param e element to be appended to this list
 	 * @return true (as specified by {@link IntCollection#add})
 	 */
-	public boolean add(int e)
-	{
+	public boolean add(int e) {
 		ensureCapacity(size + 1);  // Increments modCount!!
 		elementData[size++] = e;
 		return true;
@@ -414,10 +386,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param element element to be inserted
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public void add(int index, int element)
-	{
-		if(index > size || index < 0)
-		{
+	public void add(int index, int element) {
+		if(index > size || index < 0) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
 
@@ -436,19 +406,17 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @return the element that was removed from the list
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
-	public int removeByIndex(int index)
-	{
+	public int removeByIndex(int index) {
 		RangeCheck(index);
 
 		modCount++;
 		int oldValue = elementData[index];
 
 		int numMoved = size - index - 1;
-		if(numMoved > 0)
-		{
+		if(numMoved > 0) {
 			System.arraycopy(elementData, index + 1, elementData, index, numMoved);
 		}
-		elementData[--size] = 0; // Let gc do its work
+		elementData[--size] = 0;
 
 		return oldValue;
 	}
@@ -466,12 +434,9 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param o element to be removed from this list, if present
 	 * @return true if this list contained the specified element
 	 */
-	public boolean remove(int o)
-	{
-		for(int index = 0; index < size; index++)
-		{
-			if(o == elementData[index])
-			{
+	public boolean remove(int o) {
+		for(int index = 0; index < size; index++) {
+			if(o == elementData[index]) {
 				fastRemove(index);
 				return true;
 			}
@@ -481,31 +446,26 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	}
 
 	/*
-		 * Private remove method that skips bounds checking and does not
-		 * return the value removed.
-		 */
-	private void fastRemove(int index)
-	{
+	 * Private remove method that skips bounds checking and does not
+	 * return the value removed.
+	 */
+	private void fastRemove(int index) {
 		modCount++;
 		int numMoved = size - index - 1;
-		if(numMoved > 0)
-		{
+		if(numMoved > 0) {
 			System.arraycopy(elementData, index + 1, elementData, index, numMoved);
 		}
-		elementData[--size] = 0; // Let gc do its work
+		elementData[--size] = 0;
 	}
 
 	/**
 	 * Removes all of the elements from this list.  The list will
 	 * be empty after this call returns.
 	 */
-	public void clear()
-	{
+	public void clear() {
 		modCount++;
 
-		// Let gc do its work
-		for(int i = 0; i < size; i++)
-		{
+		for(int i = 0; i < size; i++) {
 			elementData[i] = 0;
 		}
 
@@ -526,8 +486,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @throws NullPointerException if the specified collection is null
 	 */
 	@Override
-	public boolean addAll(IntCollection c)
-	{
+	public boolean addAll(IntCollection c) {
 		int[] a = c.toArray();
 		return addAll(a);
 	}
@@ -570,10 +529,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 * @throws NullPointerException	  if the specified collection is null
 	 */
-	public boolean addAll(int index, IntCollection c)
-	{
-		if(index > size || index < 0)
-		{
+	public boolean addAll(int index, IntCollection c) {
+		if(index > size || index < 0) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
 
@@ -582,8 +539,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 		ensureCapacity(size + numNew);  // Increments modCount
 
 		int numMoved = size - index;
-		if(numMoved > 0)
-		{
+		if(numMoved > 0) {
 			System.arraycopy(elementData, index, elementData, index + numNew, numMoved);
 		}
 
@@ -605,16 +561,13 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 *                                   range (fromIndex &lt; 0 || fromIndex &gt;= size() || toIndex
 	 *                                   &gt; size() || toIndex &lt; fromIndex)
 	 */
-	protected void removeRange(int fromIndex, int toIndex)
-	{
+	protected void removeRange(int fromIndex, int toIndex) {
 		modCount++;
 		int numMoved = size - toIndex;
 		System.arraycopy(elementData, toIndex, elementData, fromIndex, numMoved);
 
-		// Let gc do its work
 		int newSize = size - (toIndex - fromIndex);
-		while(size != newSize)
-		{
+		while(size != newSize) {
 			elementData[--size] = 0;
 		}
 	}
@@ -625,10 +578,8 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * negative: It is always used immediately prior to an array access,
 	 * which throws an ArrayIndexOutOfBoundsException if index is negative.
 	 */
-	private void RangeCheck(int index)
-	{
-		if(index >= size)
-		{
+	private void RangeCheck(int index) {
+		if(index >= size) {
 			throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
 		}
 	}
@@ -644,8 +595,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @param s the stream
 	 * @throws java.io.IOException if {@link java.io.ObjectOutputStream} throw an exception.
 	 */
-	private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException
-	{
+	private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
 		// Write out element count, and any hidden stuff
 		int expectedModCount = modCount;
 		s.defaultWriteObject();
@@ -654,16 +604,13 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 		s.writeInt(elementData.length);
 
 		// Write out all elements in the proper order.
-		for(int i = 0; i < size; i++)
-		{
+		for(int i = 0; i < size; i++) {
 			s.writeInt(elementData[i]);
 		}
 
-		if(modCount != expectedModCount)
-		{
+		if(modCount != expectedModCount) {
 			throw new ConcurrentModificationException();
 		}
-
 	}
 
 	/**
@@ -674,8 +621,7 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 	 * @throws java.io.IOException if the stream throws an exception
 	 * @throws ClassNotFoundException if the stream represents an unknown class
 	 */
-	private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException
-	{
+	private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
 		// Read in size, and any hidden stuff
 		s.defaultReadObject();
 
@@ -684,9 +630,131 @@ public class ArrayIntList extends AbstractIntList implements IntList, RandomAcce
 		int[] a = elementData = new int[arrayLength];
 
 		// Read in all elements in the proper order.
-		for(int i = 0; i < size; i++)
-		{
+		for(int i = 0; i < size; i++) {
 			a[i] = s.readInt();
+		}
+	}
+
+	/**
+	 * Creates a <em><a href="Spliterator.html#binding">late-binding</a></em>
+	 * and <em>fail-fast</em> {@link Spliterator} over the elements in this
+	 * list.
+	 *
+	 * <p>The {@code Spliterator} reports {@link Spliterator#SIZED},
+	 * {@link Spliterator#SUBSIZED}, and {@link Spliterator#ORDERED}.
+	 * Overriding implementations should document the reporting of additional
+	 * characteristic values.
+	 *
+	 * @return a {@code Spliterator} over the elements in this list
+	 * @since 1.8
+	 */
+	@Override
+	public Spliterator.OfInt spliterator() {
+		return new ArrayListSpliterator(0, -1, 0);
+	}
+
+	/** Index-based split-by-two, lazily initialized Spliterator */
+	final class ArrayListSpliterator implements Spliterator.OfInt {
+
+		/*
+		 * If ArrayLists were immutable, or structurally immutable (no
+		 * adds, removes, etc), we could implement their spliterators
+		 * with Arrays.spliterator. Instead we detect as much
+		 * interference during traversal as practical without
+		 * sacrificing much performance. We rely primarily on
+		 * modCounts. These are not guaranteed to detect concurrency
+		 * violations, and are sometimes overly conservative about
+		 * within-thread interference, but detect enough problems to
+		 * be worthwhile in practice. To carry this out, we (1) lazily
+		 * initialize fence and expectedModCount until the latest
+		 * point that we need to commit to the state we are checking
+		 * against; thus improving precision.  (This doesn't apply to
+		 * SubLists, that create spliterators with current non-lazy
+		 * values).  (2) We perform only a single
+		 * ConcurrentModificationException check at the end of forEach
+		 * (the most performance-sensitive method). When using forEach
+		 * (as opposed to iterators), we can normally only detect
+		 * interference after actions, not before. Further
+		 * CME-triggering checks apply to all other possible
+		 * violations of assumptions for example null or too-small
+		 * elementData array given its size(), that could only have
+		 * occurred due to interference.  This allows the inner loop
+		 * of forEach to run without any further checks, and
+		 * simplifies lambda-resolution. While this does entail a
+		 * number of checks, note that in the common case of
+		 * list.stream().forEach(a), no checks or other computation
+		 * occur anywhere other than inside forEach itself.  The other
+		 * less-often-used methods cannot take advantage of most of
+		 * these streamlinings.
+		 */
+
+		private int index; // current index, modified on advance/split
+		private int fence; // -1 until used; then one past last index
+		private int expectedModCount; // initialized when fence set
+
+		/** Creates new spliterator covering the given range. */
+		ArrayListSpliterator(int origin, int fence, int expectedModCount) {
+			this.index = origin;
+			this.fence = fence;
+			this.expectedModCount = expectedModCount;
+		}
+
+		private int getFence() { // initialize fence to size on first use
+			int hi; // (a specialized variant appears in method forEach)
+			if ((hi = fence) < 0) {
+				expectedModCount = modCount;
+				hi = fence = size;
+			}
+			return hi;
+		}
+
+		public ArrayListSpliterator trySplit() {
+			int hi = getFence(), lo = index, mid = (lo + hi) >>> 1;
+			return (lo >= mid) ? null : // divide range in half unless too small
+					new ArrayListSpliterator(lo, index = mid, expectedModCount);
+		}
+
+		public boolean tryAdvance(IntConsumer action) {
+			requireNonNull(action);
+			int hi = getFence(), i = index;
+			if (i < hi) {
+				index = i + 1;
+				action.accept(elementData[i]);
+				if (modCount != expectedModCount)
+					throw new ConcurrentModificationException();
+				return true;
+			}
+			return false;
+		}
+
+		public void forEachRemaining(IntConsumer action) {
+			requireNonNull(action);
+			int i, hi, mc; // hoist accesses and checks from loop
+			int[] a;
+			if ((a = elementData) != null) {
+				if ((hi = fence) < 0) {
+					mc = modCount;
+					hi = size;
+				}
+				else
+					mc = expectedModCount;
+				if ((i = index) >= 0 && (index = hi) <= a.length) {
+					for (; i < hi; ++i) {
+						action.accept(a[i]);
+					}
+					if (modCount == mc)
+						return;
+				}
+			}
+			throw new ConcurrentModificationException();
+		}
+
+		public long estimateSize() {
+			return getFence() - index;
+		}
+
+		public int characteristics() {
+			return Spliterator.ORDERED | Spliterator.SIZED | Spliterator.SUBSIZED;
 		}
 	}
 }

@@ -24,10 +24,7 @@
  */
 package io.github.joealisson.primitive.lists.impl;
 
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.NoSuchElementException;
-import java.util.RandomAccess;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import io.github.joealisson.primitive.collections.IntCollection;
@@ -71,6 +68,7 @@ import io.github.joealisson.primitive.lists.abstracts.AbstractIntList;
  * Java Collections Framework</a>.
  *
  * @author Doug Lea
+ * @author  Alisson Oliveira
  * @since 1.0.0
  */
 public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.Serializable
@@ -79,7 +77,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
     /**
      * The lock protecting all mutators
      */
-    private transient final ReentrantLock lock = new ReentrantLock();
+    private transient final Object lock = new Object();
 
     /**
      * The array, accessed only via getArray/setArray.
@@ -87,27 +85,9 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
     private volatile transient int[] array;
 
     /**
-     * Gets the array.  Non-private so as to also be accessible
-     * from CopyOnWriteArraySet class.
-     */
-    final int[] getArray()
-    {
-        return array;
-    }
-
-    /**
-     * Sets the array.
-     */
-    final void setArray(int[] a)
-    {
-        array = a;
-    }
-
-    /**
      * Creates an empty list.
      */
-    public CArrayIntList()
-    {
+    public CArrayIntList() {
         setArray(new int[0]);
     }
 
@@ -119,22 +99,34 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param c the collection of initially held elements
      * @throws NullPointerException if the specified collection is null
      */
-    public CArrayIntList(IntCollection c)
-    {
-        int[] elements = c.toArray();
-        setArray(elements);
+    public CArrayIntList(IntCollection c) {
+        setArray(c.toArray());
     }
 
     /**
      * Creates a list holding a copy of the given array.
      *
-     * @param toCopyIn the array (a copy of this array is used as the
+     * @param source the array (a copy of this array is used as the
      *                 internal array)
      * @throws NullPointerException if the specified array is null
      */
-    public CArrayIntList(int[] toCopyIn)
-    {
-        setArray(Arrays.copyOf(toCopyIn, toCopyIn.length));
+    public CArrayIntList(int[] source) {
+        setArray(Arrays.copyOf(source, source.length));
+    }
+
+    /**
+     * Gets the array.  Non-private so as to also be accessible
+     * from CopyOnWriteArraySet class.
+     */
+    final int[] getArray() {
+        return array;
+    }
+
+    /**
+     * Sets the array.
+     */
+    final void setArray(int[] a) {
+        array = a;
     }
 
     /**
@@ -142,8 +134,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return the number of elements in this list
      */
-    public int size()
-    {
+    public int size() {
         return getArray().length;
     }
 
@@ -152,16 +143,14 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return true if this list contains no elements
      */
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return size() == 0;
     }
 
     /**
      * Test for equality, coping with nulls.
      */
-    private static boolean eq(int o1, int o2)
-    {
+    private static boolean eq(int o1, int o2) {
         return o1 == o2;
     }
 
@@ -175,16 +164,12 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param fence	one past last index to search
      * @return index of element, or -1 if absent
      */
-    private static int indexOf(int o, int[] elements, int index, int fence)
-    {
-        for(int i = index; i < fence; i++)
-        {
-            if(o == elements[i])
-            {
+    private static int indexOf(int o, int[] elements, int index, int fence) {
+        for(int i = index; i < fence; i++) {
+            if(o == elements[i]) {
                 return i;
             }
         }
-
         return -1;
     }
 
@@ -196,16 +181,12 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param index	first index to search
      * @return index of element, or -1 if absent
      */
-    private static int lastIndexOf(int o, int[] elements, int index)
-    {
-        for(int i = index; i >= 0; i--)
-        {
-            if(o == elements[i])
-            {
+    private static int lastIndexOf(int o, int[] elements, int index) {
+        for(int i = index; i >= 0; i--) {
+            if(o == elements[i]) {
                 return i;
             }
         }
-
         return -1;
     }
 
@@ -218,8 +199,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param o element whose presence in this list is to be tested
      * @return true if this list contains the specified element
      */
-    public boolean contains(int o)
-    {
+    public boolean contains(int o) {
         int[] elements = getArray();
         return indexOf(o, elements, 0, elements.length) >= 0;
     }
@@ -227,8 +207,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
     /**
      * {@inheritDoc}
      */
-    public int indexOf(int o)
-    {
+    public int indexOf(int o) {
         int[] elements = getArray();
         return indexOf(o, elements, 0, elements.length);
     }
@@ -248,8 +227,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *         -1 if the element is not found.
      * @throws IndexOutOfBoundsException if the specified index is negative
      */
-    public int indexOf(int e, int index)
-    {
+    public int indexOf(int e, int index) {
         int[] elements = getArray();
         return indexOf(e, elements, index, elements.length);
     }
@@ -257,8 +235,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
     /**
      * {@inheritDoc}
      */
-    public int lastIndexOf(int o)
-    {
+    public int lastIndexOf(int o) {
         int[] elements = getArray();
         return lastIndexOf(o, elements, elements.length - 1);
     }
@@ -279,8 +256,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @throws IndexOutOfBoundsException if the specified index is greater
      *                                   than or equal to the current size of this list
      */
-    public int lastIndexOf(int e, int index)
-    {
+    public int lastIndexOf(int e, int index) {
         int[] elements = getArray();
         return lastIndexOf(e, elements, index);
     }
@@ -291,16 +267,13 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return a clone of this list
      */
-    public Object clone()
-    {
-        try
-        {
+    public Object clone() {
+        try {
             CArrayIntList c = (CArrayIntList) (super.clone());
             //TODO [VISTALL] c.resetLock();
             return c;
         }
-        catch(CloneNotSupportedException e)
-        {
+        catch(CloneNotSupportedException e) {
             // this shouldn't happen, since we are Cloneable
             throw new InternalError();
         }
@@ -320,8 +293,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return an array containing all the elements in this list
      */
-    public int[] toArray()
-    {
+    public int[] toArray() {
         int[] elements = getArray();
         return Arrays.copyOf(elements, elements.length);
     }
@@ -366,16 +338,13 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *                              this list
      * @throws NullPointerException if the specified array is null
      */
-    public int[] toArray(int a[])
-    {
+    public int[] toArray(int a[]) {
         int[] elements = getArray();
         int len = elements.length;
-        if(a.length < len)
-        {
+        if(a.length < len) {
             return Arrays.copyOf(elements, len);
         }
-        else
-        {
+        else {
             System.arraycopy(elements, 0, a, 0, len);
             if(a.length > len)
             {
@@ -403,32 +372,17 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public int set(int index, int element)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public int set(int index, int element) {
+        synchronized (lock)  {
             int[] elements = getArray();
             int oldValue = elements[index];
 
-            if(oldValue != element)
-            {
-                int len = elements.length;
-                int[] newElements = Arrays.copyOf(elements, len);
-                newElements[index] = element;
-                setArray(newElements);
-            }
-            else
-            {
-                // Not quite a no-op; ensures volatile write semantics
+            if(oldValue != element) {
+                elements = elements.clone();
+                elements[index] = element;
                 setArray(elements);
             }
             return oldValue;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -438,22 +392,14 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param e element to be appended to this list
      * @return true (as specified by {@link IntCollection#add(int)} )
      */
-    public boolean add(int e)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public boolean add(int e) {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
             int[] newElements = Arrays.copyOf(elements, len + 1);
             newElements[len] = e;
             setArray(newElements);
             return true;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -464,22 +410,16 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public void add(int index, int element)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public void add(int index, int element) {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
-            if(index > len || index < 0)
-            {
+            if(index > len || index < 0) {
                 throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + len);
             }
             int[] newElements;
             int numMoved = len - index;
-            if(numMoved == 0)
-            {
+            if(numMoved == 0) {
                 newElements = Arrays.copyOf(elements, len + 1);
             }
             else
@@ -491,10 +431,6 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             newElements[index] = element;
             setArray(newElements);
         }
-        finally
-        {
-            lock.unlock();
-        }
     }
 
     /**
@@ -504,12 +440,8 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public int removeByIndex(int index)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public int removeByIndex(int index) {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
             int oldValue = elements[index];
@@ -527,10 +459,6 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             }
             return oldValue;
         }
-        finally
-        {
-            lock.unlock();
-        }
     }
 
     /**
@@ -546,35 +474,26 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param o element to be removed from this list, if present
      * @return true if this list contained the specified element
      */
-    public boolean remove(int o)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public boolean remove(int o) {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
-            if(len != 0)
-            {
+            if(len != 0) {
                 // Copy while searching for element to remove
                 // This wins in the normal case of element being present
                 int newlen = len - 1;
                 int[] newElements = new int[newlen];
 
-                for(int i = 0; i < newlen; ++i)
-                {
-                    if(eq(o, elements[i]))
-                    {
+                for(int i = 0; i < newlen; ++i) {
+                    if(eq(o, elements[i])) {
                         // found one;  copy remaining and exit
-                        for(int k = i + 1; k < len; ++k)
-                        {
+                        for(int k = i + 1; k < len; ++k) {
                             newElements[k - 1] = elements[k];
                         }
                         setArray(newElements);
                         return true;
                     }
-                    else
-                    {
+                    else {
                         newElements[i] = elements[i];
                     }
                 }
@@ -587,10 +506,6 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
                 }
             }
             return false;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -607,36 +522,24 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *                                   range (fromIndex &lt; 0 || fromIndex &gt;= size() || toIndex
      *                                   &gt; size() || toIndex &lt; fromIndex)
      */
-    private void removeRange(int fromIndex, int toIndex)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    private void removeRange(int fromIndex, int toIndex) {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
 
-            if(fromIndex < 0 || fromIndex >= len || toIndex > len || toIndex < fromIndex)
-            {
+            if(fromIndex < 0 || fromIndex >= len || toIndex > len || toIndex < fromIndex) {
                 throw new IndexOutOfBoundsException();
             }
             int newlen = len - (toIndex - fromIndex);
             int numMoved = len - toIndex;
-            if(numMoved == 0)
-            {
+            if(numMoved == 0) {
                 setArray(Arrays.copyOf(elements, newlen));
-            }
-            else
-            {
+            } else {
                 int[] newElements = new int[newlen];
                 System.arraycopy(elements, 0, newElements, 0, fromIndex);
                 System.arraycopy(elements, toIndex, newElements, fromIndex, numMoved);
                 setArray(newElements);
             }
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -646,35 +549,23 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param e element to be added to this list, if absent
      * @return true if the element was added
      */
-    public boolean addIfAbsent(int e)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public boolean addIfAbsent(int e) {
+        synchronized (lock){
             // Copy while checking if already present.
             // This wins in the most common case where it is not present
             int[] elements = getArray();
             int len = elements.length;
             int[] newElements = new int[len + 1];
-            for(int i = 0; i < len; ++i)
-            {
-                if(eq(e, elements[i]))
-                {
+            for(int i = 0; i < len; ++i) {
+                if(eq(e, elements[i])) {
                     return false; // exit, throwing away copy
-                }
-                else
-                {
+                } else {
                     newElements[i] = elements[i];
                 }
             }
             newElements[len] = e;
             setArray(newElements);
             return true;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -688,14 +579,11 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @throws NullPointerException if the specified collection is null
      * @see #contains(int)
      */
-    public boolean containsAll(IntCollection c)
-    {
+    public boolean containsAll(IntCollection c) {
         int[] elements = getArray();
         int len = elements.length;
-        for(int e : c.toArray())
-        {
-            if(indexOf(e, elements, 0, len) < 0)
-            {
+        for(int e : c.toArray()) {
+            if(indexOf(e, elements, 0, len) < 0) {
                 return false;
             }
         }
@@ -716,38 +604,25 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *                              or if the specified collection is null
      * @see #remove(int)
      */
-    public boolean removeAll(IntCollection c)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public boolean removeAll(IntCollection c) {
+        synchronized ( lock ) {
             int[] elements = getArray();
             int len = elements.length;
-            if(len != 0)
-            {
+            if(len != 0) {
                 // temp array holds those elements we know we want to keep
                 int newlen = 0;
                 int[] temp = new int[len];
-                for(int i = 0; i < len; ++i)
-                {
-                    int element = elements[i];
-                    if(!c.contains(element))
-                    {
+                for (int element : elements) {
+                    if (!c.contains(element)) {
                         temp[newlen++] = element;
                     }
                 }
-                if(newlen != len)
-                {
+                if(newlen != len) {
                     setArray(Arrays.copyOf(temp, newlen));
                     return true;
                 }
             }
             return false;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -765,38 +640,25 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *                              or if the specified collection is null
      * @see #remove(int)
      */
-    public boolean retainAll(IntCollection c)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public boolean retainAll(IntCollection c) {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
-            if(len != 0)
-            {
+            if(len != 0) {
                 // temp array holds those elements we know we want to keep
                 int newlen = 0;
                 int[] temp = new int[len];
-                for(int i = 0; i < len; ++i)
-                {
-                    int element = elements[i];
-                    if(c.contains(element))
-                    {
+                for (int element : elements) {
+                    if (c.contains(element)) {
                         temp[newlen++] = element;
                     }
                 }
-                if(newlen != len)
-                {
+                if(newlen != len) {
                     setArray(Arrays.copyOf(temp, newlen));
                     return true;
                 }
             }
             return false;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -811,44 +673,34 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @throws NullPointerException if the specified collection is null
      * @see #addIfAbsent(int)
      */
-    public int addAllAbsent(IntCollection c)
-    {
+    public int addAllAbsent(IntCollection c) {
         int[] cs = c.toArray();
         return addAllAbsent(cs);
     }
 
     public int addAllAbsent(int[] items) {
-        if(items.length == 0)
-        {
+        if(items.length == 0) {
             return 0;
         }
         int[] uniq = new int[items.length];
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
             int added = 0;
-            for(int i = 0; i < items.length; ++i)
-            { // scan for duplicates
+            int i = 0;
+            while (i < items.length) { // scan for duplicates
                 int e = items[i];
-                if(indexOf(e, elements, 0, len) < 0 && indexOf(e, uniq, 0, added) < 0)
-                {
+                if(indexOf(e, elements, 0, len) < 0 && indexOf(e, uniq, 0, added) < 0) {
                     uniq[added++] = e;
                 }
+                ++i;
             }
-            if(added > 0)
-            {
+            if(added > 0) {
                 int[] newElements = Arrays.copyOf(elements, len + added);
                 System.arraycopy(uniq, 0, newElements, len, added);
                 setArray(newElements);
             }
             return added;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -856,17 +708,9 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * Removes all of the elements from this list.
      * The list will be empty after this call returns.
      */
-    public void clear()
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public void clear() {
+        synchronized (lock) {
             setArray(new int[0]);
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -881,10 +725,8 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @see #add(int)
      */
     @Override
-    public boolean addAll(IntCollection c)
-    {
-        int[] cs = c.toArray();
-        return addAll(cs);
+    public boolean addAll(IntCollection c) {
+        return addAll(c.toArray());
     }
 
     /**
@@ -898,24 +740,16 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      */
     @Override
     public boolean addAll(int[] items) {
-        if(items.length == 0)
-        {
+        if(items.length == 0) {
             return false;
         }
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
             int[] newElements = Arrays.copyOf(elements, len + items.length);
             System.arraycopy(items, 0, newElements, len, items.length);
             setArray(newElements);
             return true;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -935,31 +769,23 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @throws NullPointerException	  if the specified collection is null
      * @see #add(int, int)
      */
-    public boolean addAll(int index, IntCollection c)
-    {
+    public boolean addAll(int index, IntCollection c) {
         int[] cs = c.toArray();
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
-            if(index > len || index < 0)
-            {
+            if(index > len || index < 0) {
                 throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + len);
             }
-            if(cs.length == 0)
-            {
+            if(cs.length == 0) {
                 return false;
             }
             int numMoved = len - index;
             int[] newElements;
-            if(numMoved == 0)
-            {
+            if(numMoved == 0) {
                 newElements = Arrays.copyOf(elements, len + cs.length);
             }
-            else
-            {
+            else {
                 newElements = new int[len + cs.length];
                 System.arraycopy(elements, 0, newElements, 0, index);
                 System.arraycopy(elements, index, newElements, index + cs.length, numMoved);
@@ -967,10 +793,6 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             System.arraycopy(cs, 0, newElements, index, cs.length);
             setArray(newElements);
             return true;
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -984,8 +806,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @throws java.io.IOException if the stream throws an exception
      */
-    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException
-    {
+    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
 
         // Write out element count, and any hidden stuff
         s.defaultWriteObject();
@@ -996,9 +817,8 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
         s.writeInt(len);
 
         // Write out all elements in the proper order.
-        for(int i = 0; i < len; i++)
-        {
-            s.writeInt(elements[i]);
+        for (int element : elements) {
+            s.writeInt(element);
         }
     }
 
@@ -1010,8 +830,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @throws java.io.IOException if the stream throws an exception
      * @throws ClassNotFoundException if the stream represents an unknown class
      */
-    private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException
-    {
+    private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
 
         // Read in size, and any hidden stuff
         s.defaultReadObject();
@@ -1041,8 +860,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return a string representation of this list
      */
-    public String toString()
-    {
+    public String toString() {
         return Arrays.toString(getArray());
     }
 
@@ -1061,33 +879,23 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @param o the object to be compared for equality with this list
      * @return {@code true} if the specified object is equal to this list
      */
-    public boolean equals(Object o)
-    {
-        if(o == this)
-        {
+    public boolean equals(Object o) {
+        if(o == this) {
             return true;
         }
-        if(!(o instanceof IntList))
-        {
+        if(!(o instanceof IntList)) {
             return false;
         }
 
         IntList list = (IntList) (o);
         IntIterator it = list.iterator();
         int[] elements = getArray();
-        int len = elements.length;
-        for(int i = 0; i < len; ++i)
-        {
-            if(!it.hasNext() || !eq(elements[i], it.next()))
-            {
+        for (int element : elements) {
+            if (!it.hasNext() || !eq(element, it.next())) {
                 return false;
             }
         }
-        if(it.hasNext())
-        {
-            return false;
-        }
-        return true;
+        return !it.hasNext();
     }
 
     /**
@@ -1098,14 +906,11 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return the hash code value for this list
      */
-    public int hashCode()
-    {
+    public int hashCode() {
         int hashCode = 1;
         int[] elements = getArray();
         int len = elements.length;
-        for(int i = 0; i < len; ++i)
-        {
-            Object obj = elements[i];
+        for (Object obj : elements) {
             hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
         }
         return hashCode;
@@ -1122,8 +927,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @return an iterator over the elements in this list in proper sequence
      */
-    public IntIterator iterator()
-    {
+    public IntIterator iterator() {
         return new COWIterator(getArray(), 0);
     }
 
@@ -1134,8 +938,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * traversing the iterator. The iterator does <em>NOT</em> support the
      * remove, set or add methods.
      */
-    public IntListIterator listIterator()
-    {
+    public IntListIterator listIterator() {
         return new COWIterator(getArray(), 0);
     }
 
@@ -1148,8 +951,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public IntListIterator listIterator(final int index)
-    {
+    public IntListIterator listIterator(final int index) {
         int[] elements = getArray();
         int len = elements.length;
         if(index < 0 || index > len)
@@ -1160,8 +962,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
         return new COWIterator(elements, index);
     }
 
-    private static class COWIterator implements IntListIterator
-    {
+    private static class COWIterator implements IntListIterator {
         /**
          * Snapshot of the array *
          */
@@ -1171,14 +972,12 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
          */
         private int cursor;
 
-        private COWIterator(int[] elements, int initialCursor)
-        {
+        private COWIterator(int[] elements, int initialCursor) {
             cursor = initialCursor;
             snapshot = elements;
         }
 
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
             return cursor < snapshot.length;
         }
 
@@ -1187,31 +986,25 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             return cursor > 0;
         }
 
-        public int next()
-        {
-            if(!hasNext())
-            {
+        public int nextInt() {
+            if(!hasNext()) {
                 throw new NoSuchElementException();
             }
             return snapshot[cursor++];
         }
 
-        public int previous()
-        {
-            if(!hasPrevious())
-            {
+        public int previous() {
+            if(!hasPrevious()) {
                 throw new NoSuchElementException();
             }
             return snapshot[--cursor];
         }
 
-        public int nextIndex()
-        {
+        public int nextIndex() {
             return cursor;
         }
 
-        public int previousIndex()
-        {
+        public int previousIndex() {
             return cursor - 1;
         }
 
@@ -1221,8 +1014,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
          * @throws UnsupportedOperationException always; remove
          *                                       is not supported by this iterator.
          */
-        public void remove()
-        {
+        public void remove() {
             throw new UnsupportedOperationException();
         }
 
@@ -1232,8 +1024,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
          * @throws UnsupportedOperationException always; set
          *                                       is not supported by this iterator.
          */
-        public void set(int e)
-        {
+        public void set(int e) {
             throw new UnsupportedOperationException();
         }
 
@@ -1243,8 +1034,7 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
          * @throws UnsupportedOperationException always; add
          *                                       is not supported by this iterator.
          */
-        public void add(int e)
-        {
+        public void add(int e) {
             throw new UnsupportedOperationException();
         }
     }
@@ -1270,23 +1060,14 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * @return a view of the specified range within this list
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public IntList subList(int fromIndex, int toIndex)
-    {
-        final ReentrantLock lock = this.lock;
-        lock.lock();
-        try
-        {
+    public IntList subList(int fromIndex, int toIndex) {
+        synchronized (lock) {
             int[] elements = getArray();
             int len = elements.length;
-            if(fromIndex < 0 || toIndex > len || fromIndex > toIndex)
-            {
+            if(fromIndex < 0 || toIndex > len || fromIndex > toIndex) {
                 throw new IndexOutOfBoundsException();
             }
             return new COWSubList(this, fromIndex, toIndex);
-        }
-        finally
-        {
-            lock.unlock();
         }
     }
 
@@ -1305,16 +1086,14 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
      * AbstractList are already so slow on COW sublists that
      * adding a bit more space/time doesn't seem even noticeable.
      */
-    private static class COWSubList extends AbstractIntList
-    {
+    private static class COWSubList extends AbstractIntList {
         private final CArrayIntList l;
         private final int offset;
         private int size;
         private int[] expectedArray;
 
         // only call this holding l's lock
-        private COWSubList(CArrayIntList list, int fromIndex, int toIndex)
-        {
+        private COWSubList(CArrayIntList list, int fromIndex, int toIndex) {
             l = list;
             expectedArray = l.getArray();
             offset = fromIndex;
@@ -1322,116 +1101,67 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
         }
 
         // only call this holding l's lock
-        private void checkForComodification()
-        {
-            if(l.getArray() != expectedArray)
-            {
+        private void checkForComodification() {
+            if(l.getArray() != expectedArray) {
                 throw new ConcurrentModificationException();
             }
         }
 
         // only call this holding l's lock
-        private void rangeCheck(int index)
-        {
-            if(index < 0 || index >= size)
-            {
+        private void rangeCheck(int index) {
+            if(index < 0 || index >= size) {
                 throw new IndexOutOfBoundsException("Index: " + index + ",Size: " + size);
             }
         }
 
-        public int set(int index, int element)
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public int set(int index, int element) {
+            synchronized (l.lock) {
                 rangeCheck(index);
                 checkForComodification();
                 int x = l.set(index + offset, element);
                 expectedArray = l.getArray();
                 return x;
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public int get(int index)
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public int get(int index) {
+            synchronized (l.lock) {
                 rangeCheck(index);
                 checkForComodification();
                 return l.get(index + offset);
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public int size()
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public int size() {
+            synchronized (l.lock) {
                 checkForComodification();
                 return size;
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public void add(int index, int element)
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public void add(int index, int element) {
+            synchronized (l.lock) {
                 checkForComodification();
-                if(index < 0 || index > size)
-                {
+                if(index < 0 || index > size) {
                     throw new IndexOutOfBoundsException();
                 }
                 l.add(index + offset, element);
                 expectedArray = l.getArray();
                 size++;
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public void clear()
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public void clear() {
+            synchronized (l.lock) {
                 checkForComodification();
                 l.removeRange(offset, offset + size);
                 expectedArray = l.getArray();
                 size = 0;
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public int removeByIndex(int index)
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public int removeByIndex(int index) {
+            synchronized (l.lock) {
                 rangeCheck(index);
                 checkForComodification();
                 int result = l.removeByIndex(index + offset);
@@ -1439,77 +1169,45 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
                 size--;
                 return result;
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public IntIterator iterator()
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public IntIterator iterator() {
+            synchronized (l.lock) {
                 checkForComodification();
                 return new COWSubListIterator(l, 0, offset, size);
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public IntListIterator listIterator(final int index)
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public IntListIterator listIterator(final int index) {
+            synchronized (l.lock) {
                 checkForComodification();
-                if(index < 0 || index > size)
-                {
+                if(index < 0 || index > size) {
                     throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
                 }
                 return new COWSubListIterator(l, index, offset, size);
             }
-            finally
-            {
-                lock.unlock();
-            }
         }
 
-        public IntList subList(int fromIndex, int toIndex)
-        {
-            final ReentrantLock lock = l.lock;
-            lock.lock();
-            try
-            {
+        public IntList subList(int fromIndex, int toIndex) {
+            synchronized (l.lock) {
                 checkForComodification();
-                if(fromIndex < 0 || toIndex > size)
-                {
+                if(fromIndex < 0 || toIndex > size) {
                     throw new IndexOutOfBoundsException();
                 }
                 return new COWSubList(l, fromIndex + offset, toIndex + offset);
-            }
-            finally
-            {
-                lock.unlock();
             }
         }
 
     }
 
 
-    private static class COWSubListIterator implements IntListIterator
-    {
+    private static class COWSubListIterator implements IntListIterator {
         private final IntListIterator i;
         private final int index;
         private final int offset;
         private final int size;
 
-        private COWSubListIterator(IntList l, int index, int offset, int size)
-        {
+        private COWSubListIterator(IntList l, int index, int offset, int size) {
             this.index = index;
             this.offset = offset;
             this.size = size;
@@ -1521,14 +1219,10 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             return nextIndex() < size;
         }
 
-        public int next()
-        {
-            if(hasNext())
-            {
-                return i.next();
-            }
-            else
-            {
+        public int nextInt() {
+            if(hasNext()) {
+                return i.nextInt();
+            } else {
                 throw new NoSuchElementException();
             }
         }
@@ -1538,14 +1232,10 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
             return previousIndex() >= 0;
         }
 
-        public int previous()
-        {
-            if(hasPrevious())
-            {
+        public int previous() {
+            if(hasPrevious()) {
                 return i.previous();
-            }
-            else
-            {
+            } else {
                 throw new NoSuchElementException();
             }
         }
@@ -1574,5 +1264,23 @@ public class CArrayIntList implements IntList, RandomAccess, Cloneable, java.io.
         {
             throw new UnsupportedOperationException();
         }
+    }
+
+    /**
+     * Returns a {@link Spliterator} over the elements in this list.
+     *
+     * <p>The {@code Spliterator} reports {@link Spliterator#IMMUTABLE},
+     * {@link Spliterator#ORDERED}, {@link Spliterator#SIZED}, and
+     * {@link Spliterator#SUBSIZED}.
+     *
+     * <p>The spliterator provides a snapshot of the state of the list
+     * when the spliterator was constructed. No synchronization is needed while
+     * operating on the spliterator.
+     *
+     * @return a {@code Spliterator} over the elements in this list
+     */
+    @Override
+    public Spliterator.OfInt spliterator() {
+        return Spliterators.spliterator(getArray(), Spliterator.IMMUTABLE | Spliterator.ORDERED);
     }
 }

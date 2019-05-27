@@ -331,16 +331,11 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	 * is performed, so there is a slight chance that multiple calls to this
 	 * method will not all return the same set.
 	 */
-	public IntSet keySet()
-	{
-		if(keySet == null)
-		{
-			keySet = new AbstractIntSet()
-			{
-				public IntIterator iterator()
-				{
-					return new IntIterator()
-					{
+	public IntSet keySet() {
+		if(keySet == null) {
+			keySet = new AbstractIntSet() {
+				public IntIterator iterator() {
+					return new IntIterator() {
 						private Iterator<IntObjectPair<V>> i = entrySet().iterator();
 
 						public boolean hasNext()
@@ -348,7 +343,7 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 							return i.hasNext();
 						}
 
-						public int next()
+						public int nextInt()
 						{
 							return i.next().getKey();
 						}
@@ -478,34 +473,20 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 
 		try
 		{
-			Iterator<IntObjectPair<V>> i = entrySet().iterator();
-			while(i.hasNext())
-			{
-				IntObjectPair<V> e = i.next();
+			for (IntObjectPair<V> e : entrySet()) {
 				int key = e.getKey();
 				V value = e.getValue();
-				if(value == null)
-				{
-					if(!(m.get(key) == null && m.containsKey(key)))
-					{
+				if (value == null) {
+					if (!(m.get(key) == null && m.containsKey(key))) {
 						return false;
 					}
-				}
-				else
-				{
-					if(!value.equals(m.get(key)))
-					{
+				} else {
+					if (!value.equals(m.get(key))) {
 						return false;
 					}
 				}
 			}
-		}
-		catch(ClassCastException unused)
-		{
-			return false;
-		}
-		catch(NullPointerException unused)
-		{
+		} catch(NullPointerException unused) {
 			return false;
 		}
 
@@ -533,10 +514,8 @@ public abstract class AbstractIntObjectMap<V> implements IntObjectMap<V>
 	public int hashCode()
 	{
 		int h = 0;
-		Iterator<IntObjectPair<V>> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			h += i.next().hashCode();
+		for (IntObjectPair<V> vIntObjectPair : entrySet()) {
+			h += vIntObjectPair.hashCode();
 		}
 		return h;
 	}

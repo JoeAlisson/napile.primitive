@@ -20,11 +20,9 @@ package io.github.joealisson.primitive.maps.impl;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.AbstractSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.IntConsumer;
 
 import io.github.joealisson.primitive.pair.IntLongPair;
 import io.github.joealisson.primitive.pair.impl.IntLongPairImpl;
@@ -38,6 +36,8 @@ import io.github.joealisson.primitive.maps.IntLongMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
 import io.github.joealisson.primitive.sets.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
+
+import static java.util.Objects.*;
 
 /**
  * <p>
@@ -409,13 +409,10 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 			{ // read-volatile
 				HashEntry[] tab = table;
 				int len = tab.length;
-				for(int i = 0; i < len; i++)
-				{
-					for(HashEntry e = tab[i]; e != null; e = e.next)
-					{
+				for (HashEntry hashEntry : tab) {
+					for (HashEntry e = hashEntry; e != null; e = e.next) {
 						long v = e.value;
-						if(value == v)
-						{
+						if (value == v) {
 							return true;
 						}
 					}
@@ -542,33 +539,23 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 			HashEntry[] newTable = HashEntry.newArray(oldCapacity << 1);
 			threshold = (int) (newTable.length * loadFactor);
 			int sizeMask = newTable.length - 1;
-			for(int i = 0; i < oldCapacity; i++)
-			{
+			for (HashEntry e : oldTable) {
 				// We need to guarantee that any existing reads of old Map can
 				//  proceed. So we cannot yet null out each bin.
-				HashEntry e = oldTable[i];
-
-				if(e != null)
-				{
+				if (e != null) {
 					HashEntry next = e.next;
 					int idx = e.hash & sizeMask;
 
 					//  Single node on list
-					if(next == null)
-					{
+					if (next == null) {
 						newTable[idx] = e;
-					}
-
-					else
-					{
+					} else {
 						// Reuse trailing consecutive sequence at same slot
 						HashEntry lastRun = e;
 						int lastIdx = idx;
-						for(HashEntry last = next; last != null; last = last.next)
-						{
+						for (HashEntry last = next; last != null; last = last.next) {
 							int k = last.hash & sizeMask;
-							if(k != lastIdx)
-							{
+							if (k != lastIdx) {
 								lastIdx = k;
 								lastRun = last;
 							}
@@ -576,8 +563,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 						newTable[lastIdx] = lastRun;
 
 						// Clone all remaining nodes
-						for(HashEntry p = e; p != lastRun; p = p.next)
-						{
+						for (HashEntry p = e; p != lastRun; p = p.next) {
 							int k = p.hash & sizeMask;
 							HashEntry n = newTable[k];
 							newTable[k] = new HashEntry(p.key, n, p.value);
@@ -922,17 +908,14 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 		if(check != sum)
 		{ // Resort to locking all segments
 			sum = 0;
-			for(int i = 0; i < segments.length; ++i)
-			{
-				segments[i].lock();
+			for (Segment segment : segments) {
+				segment.lock();
 			}
-			for(int i = 0; i < segments.length; ++i)
-			{
-				sum += segments[i].count;
+			for (Segment segment : segments) {
+				sum += segment.count;
 			}
-			for(int i = 0; i < segments.length; ++i)
-			{
-				segments[i].unlock();
+			for (Segment segment : segments) {
+				segment.unlock();
 			}
 		}
 		if(sum > Integer.MAX_VALUE)
@@ -1312,7 +1295,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 
 	final class KeyIterator extends HashIterator implements IntIterator
 	{
-		public int next()
+		public int nextInt()
 		{
 			return super.nextEntry().key;
 		}
@@ -1363,6 +1346,63 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 		}
 	}
 
+	final class  KeySpliterator  implements Spliterator.OfInt {
+
+		private final CHashIntLongMap.Segment segment;
+		private final int segmentIndex;
+		private int nextIndex;
+		private CHashIntLongMap.HashEntry nextEntry;
+
+
+		public KeySpliterator(CHashIntLongMap.Segment segment, int segmentIndex) {
+			this.segment = segment;
+			this.segmentIndex = segmentIndex;
+			nextIndex = segment.table.length -1;
+		}
+
+		@Override
+		public OfInt trySplit() {
+			int nextIndex = segmentIndex -1;
+			return nextIndex < 0 ?  null : new CHashIntLongMap.KeySpliterator(CHashIntLongMap.this.segments[nextIndex], nextIndex);
+		}
+
+		@Override
+		public long estimateSize() {
+			return segment.count;
+		}
+
+		@Override
+		public int characteristics() {
+			return Spliterator.DISTINCT | Spliterator.CONCURRENT | Spliterator.NONNULL;
+		}
+
+		@Override
+		public boolean tryAdvance(IntConsumer action) {
+			requireNonNull(action);
+			CHashIntLongMap.HashEntry entry = nextEntry();
+			if(isNull(entry)) {
+				return false;
+			}
+			action.accept(entry.key);
+			return true;
+		}
+
+		private CHashIntLongMap.HashEntry nextEntry() {
+			try {
+				segment.lock();
+				while (nextIndex >= 0) {
+					if (nonNull(nextEntry = segment.table[nextIndex--])) {
+						return nextEntry;
+					}
+				}
+			} finally {
+				segment.unlock();
+			}
+			return null;
+		}
+	}
+
+
 	final class KeySet extends AbstractIntSet
 	{
 		public IntIterator iterator()
@@ -1389,6 +1429,12 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 		public void clear()
 		{
 			CHashIntLongMap.this.clear();
+		}
+
+		@Override
+		public Spliterator.OfInt spliterator() {
+			int index = segments.length -1;
+			return CHashIntLongMap.this.new KeySpliterator(segments[index], index);
 		}
 	}
 
@@ -1471,17 +1517,15 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 	{
 		s.defaultWriteObject();
 
-		for(int k = 0; k < segments.length; ++k)
-		{
+		int k = 0;
+		while (k < segments.length) {
 			Segment seg = segments[k];
 			seg.lock();
 			try
 			{
 				HashEntry[] tab = seg.table;
-				for(int i = 0; i < tab.length; ++i)
-				{
-					for(HashEntry e = tab[i]; e != null; e = e.next)
-					{
+				for (HashEntry hashEntry : tab) {
+					for (HashEntry e = hashEntry; e != null; e = e.next) {
 						s.writeInt(e.key);
 						s.writeObject(e.value);
 					}
@@ -1491,6 +1535,7 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 			{
 				seg.unlock();
 			}
+			++k;
 		}
 		s.writeObject(null);
 		s.writeObject(null);
@@ -1509,9 +1554,8 @@ public class CHashIntLongMap extends AbstractIntLongMap implements CIntLongMap, 
 		s.defaultReadObject();
 
 		// Initialize each segment to be minimally sized, and let grow.
-		for(int i = 0; i < segments.length; ++i)
-		{
-			segments[i].setTable(new HashEntry[1]);
+		for (Segment segment : segments) {
+			segment.setTable(new HashEntry[1]);
 		}
 
 		// Read the keys and values, and put the mappings in the table

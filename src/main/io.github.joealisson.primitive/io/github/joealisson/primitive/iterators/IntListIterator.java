@@ -75,18 +75,6 @@ public interface IntListIterator extends IntIterator
 	boolean hasNext();
 
 	/**
-	 * Returns the next element in the list.  This method may be called
-	 * repeatedly to iterate through the list, or intermixed with calls to
-	 * previous to go back and forth.  (Note that alternating calls
-	 * to next and previous will return the same element
-	 * repeatedly.)
-	 *
-	 * @return the next element in the list.
-	 * @throws java.util.NoSuchElementException if the iteration has no next element.
-	 */
-	int next();
-
-	/**
 	 * Returns true if this list iterator has more elements when
 	 * traversing the list in the reverse direction.  (In other words, returns
 	 * true if previous would return an element rather than

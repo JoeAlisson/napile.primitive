@@ -19,11 +19,7 @@
 package io.github.joealisson.primitive;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.NoSuchElementException;
-import java.util.RandomAccess;
-import java.util.Set;
+import java.util.*;
 
 import io.github.joealisson.primitive.maps.LongObjectMap;
 import io.github.joealisson.primitive.maps.abstracts.AbstractLongObjectMap;
@@ -48,6 +44,7 @@ import io.github.joealisson.primitive.sets.abstracts.AbstractLongSet;
 
 /**
  * @author VISTALL
+ * @author Alisson Oliveira
  *
  * Some parts from {@link java.util.Collections}
  */
@@ -55,21 +52,22 @@ public class Containers
 {
 	public static final IntIterator EMPTY_INT_ITERATOR = new EmptyIntIterator();
 	public static final LongIterator EMPTY_LONG_ITERATOR = new EmptyLongIterator();
-	//
+
 	public static final Container EMPTY_CONTAINER = new EmptyContainer();
-	//
+
 	public static final IntList EMPTY_INT_LIST = new EmptyIntList();
 	public static final LongList EMPTY_LONG_LIST = new EmptyLongList();
-	//
+
 	public static final IntSet EMPTY_INT_SET = new EmptyIntSet();
 	public static final LongSet EMPTY_LONG_SET = new EmptyLongSet();
-	//
+
 	@SuppressWarnings("rawtypes")
 	private static final IntObjectMap EMPTY_INT_OBJECT_MAP = new EmptyIntObjectMap();
 	public static final IntLongMap EMPTY_INT_LONG_MAP = new EmptyIntLongMap();
 
 	@SuppressWarnings("rawtypes")
 	private static final LongObjectMap EMPTY_LONG_OBJECT_MAP = new EmptyLongObjectMap();
+
 
 	/**
 	 * Return empty instance of IntObjectMap
@@ -120,12 +118,11 @@ public class Containers
 		return new SingletonLongIterator(e);
 	}
 
-	private static class SingletonIntIterator implements IntIterator
-	{
+	private static class SingletonIntIterator implements IntIterator {
 		private boolean _hasNext = true;
 		private final int _value;
 
-		public SingletonIntIterator(int value)
+		SingletonIntIterator(int value)
 		{
 			_value = value;
 		}
@@ -137,10 +134,8 @@ public class Containers
 		}
 
 		@Override
-		public int next()
-		{
-			if(_hasNext)
-			{
+		public int nextInt() {
+			if(_hasNext) {
 				_hasNext = false;
 				return _value;
 			}
@@ -154,12 +149,11 @@ public class Containers
 		}
 	}
 
-	private static class SingletonLongIterator implements LongIterator
-	{
+	private static class SingletonLongIterator implements LongIterator {
 		private boolean _hasNext = true;
 		private final long _value;
 
-		public SingletonLongIterator(long value)
+		SingletonLongIterator(long value)
 		{
 			_value = value;
 		}
@@ -171,10 +165,8 @@ public class Containers
 		}
 
 		@Override
-		public long next()
-		{
-			if(_hasNext)
-			{
+		public long next() {
+			if(_hasNext) {
 				_hasNext = false;
 				return _value;
 			}
@@ -188,8 +180,7 @@ public class Containers
 		}
 	}
 
-	private static class SingletonIntList extends AbstractIntList implements RandomAccess, Serializable
-	{
+	private static class SingletonIntList extends AbstractIntList implements RandomAccess, Serializable {
 		public static final long serialVersionUID = -6795777618381165134L;
 
 		private final int element;
@@ -218,18 +209,15 @@ public class Containers
 		}
 
 		@Override
-		public int get(int index)
-		{
-			if(index != 0)
-			{
+		public int get(int index) {
+			if(index != 0) {
 				throw new IndexOutOfBoundsException("Index: " + index + ", Size: 1");
 			}
 			return element;
 		}
 	}
 
-	private static class SingletonLongList extends AbstractLongList implements RandomAccess, Serializable
-	{
+	private static class SingletonLongList extends AbstractLongList implements RandomAccess, Serializable {
 		public static final long serialVersionUID = 4281415105123492902L;
 
 		private final long element;
@@ -258,18 +246,15 @@ public class Containers
 		}
 
 		@Override
-		public long get(int index)
-		{
-			if(index != 0)
-			{
+		public long get(int index) {
+			if(index != 0) {
 				throw new IndexOutOfBoundsException("Index: " + index + ", Size: 1");
 			}
 			return element;
 		}
 	}
 
-	private static class EmptyIntIterator implements IntIterator
-	{
+	private static class EmptyIntIterator implements IntIterator {
 		@Override
 		public boolean hasNext()
 		{
@@ -277,7 +262,7 @@ public class Containers
 		}
 
 		@Override
-		public int next()
+		public int nextInt()
 		{
 			throw new NoSuchElementException();
 		}
@@ -289,8 +274,7 @@ public class Containers
 		}
 	}
 
-	private static class EmptyLongIterator implements LongIterator
-	{
+	private static class EmptyLongIterator implements LongIterator {
 		@Override
 		public boolean hasNext()
 		{
@@ -310,8 +294,7 @@ public class Containers
 		}
 	}
 
-	private static class EmptyIntObjectMap<T> extends AbstractIntObjectMap<T> implements Serializable
-	{
+	private static class EmptyIntObjectMap<T> extends AbstractIntObjectMap<T> implements Serializable {
 		public static final long serialVersionUID = -5514480375351672864L;
 
 		@Override
@@ -452,8 +435,7 @@ public class Containers
 		}
 	}
 
-	private static class EmptyIntLongMap extends AbstractIntLongMap implements Serializable
-	{
+	private static class EmptyIntLongMap extends AbstractIntLongMap implements Serializable {
 
 		public static final long serialVersionUID = 2323155007002525853L;
 
@@ -524,8 +506,7 @@ public class Containers
 		}
 	}
 
-	private static class EmptyContainer implements Container
-	{
+	private static class EmptyContainer implements Container {
 		@Override
 		public int size()
 		{
@@ -545,13 +526,11 @@ public class Containers
 		}
 	}
 
-	private static class EmptyIntSet extends AbstractIntSet implements Serializable
-	{
+	private static class EmptyIntSet extends AbstractIntSet implements Serializable {
 		public static final long serialVersionUID = 8067917265294829951L;
 
 		@Override
-		public IntIterator iterator()
-		{
+		public IntIterator iterator() {
 			return EMPTY_INT_ITERATOR;
 		}
 
@@ -574,8 +553,7 @@ public class Containers
 		}
 	}
 
-	private static class EmptyLongSet extends AbstractLongSet implements Serializable
-	{
+	private static class EmptyLongSet extends AbstractLongSet implements Serializable {
 		public static final long serialVersionUID = 8067917265294829951L;
 
 		@Override
@@ -604,8 +582,7 @@ public class Containers
 	}
 
 
-	private static class EmptyIntList extends AbstractIntList implements RandomAccess, Serializable
-	{
+	private static class EmptyIntList extends AbstractIntList implements RandomAccess, Serializable {
 		public static final long serialVersionUID = 7062789284942705902L;
 
 		@Override
@@ -631,10 +608,14 @@ public class Containers
 		{
 			return EMPTY_INT_LIST;
 		}
+
+		@Override
+		public Spliterator.OfInt spliterator() {
+			return Spliterators.emptyIntSpliterator();
+		}
 	}
 
-	private static class EmptyLongList extends AbstractLongList implements RandomAccess, Serializable
-	{
+	private static class EmptyLongList extends AbstractLongList implements RandomAccess, Serializable {
 		public static final long serialVersionUID = 8054308266104274168L;
 
 		@Override

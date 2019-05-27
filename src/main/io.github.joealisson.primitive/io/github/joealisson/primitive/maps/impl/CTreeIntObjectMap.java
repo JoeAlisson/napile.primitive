@@ -2739,7 +2739,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 
 	final class KeyIterator extends Iter<V> implements IntIterator
 	{
-		public int next()
+		public int nextInt()
 		{
 			Node<V> n = next;
 			advance();
@@ -2886,6 +2886,8 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 				return ((CTreeIntObjectMap.SubMap<Object>) m).keyIterator();
 			}
 		}
+
+
 
 		public boolean equals(Object o)
 		{
@@ -3937,7 +3939,7 @@ public class CTreeIntObjectMap<V> extends AbstractIntObjectMap<V> implements CNa
 		@SuppressWarnings("rawtypes")
 		final class SubMapKeyIterator extends SubMapIter implements IntIterator
 		{
-			public int next()
+			public int nextInt()
 			{
 				@SuppressWarnings("unchecked")
 				Node<V> n = next;
