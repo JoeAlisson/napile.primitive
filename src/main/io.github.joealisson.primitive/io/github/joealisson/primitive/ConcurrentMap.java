@@ -100,6 +100,7 @@ interface ConcurrentMap {
     int TREEBIN   = -2; // hash for roots of trees
     int RESERVED  = -3; // hash for transient reservations
     int HASH_BITS = 0x7fffffff; // usable bits of normal node hash
+    long LONG_HASH_BITS = 0x7fffffffffffffffL; // usable bits of long node hash
 
     /** Number of CPUS, to place bounds on some sizings */
     int NCPU = Runtime.getRuntime().availableProcessors();
@@ -140,6 +141,10 @@ interface ConcurrentMap {
      */
     static int spread(int h) {
         return (h ^ (h >>> 16)) & HASH_BITS;
+    }
+
+    static long spread(long h) {
+        return (h ^ (h >>> 32)) & LONG_HASH_BITS;
     }
 
     /**

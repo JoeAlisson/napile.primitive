@@ -483,6 +483,33 @@ public interface IntCollection extends IntIterable {
 	 */
 	boolean addAll(IntCollection c);
 
+
+	/**
+	 * Adds all of the elements in the specified array to this collection
+	 * (optional operation).  The behavior of this operation is undefined if
+	 * the specified collection is modified while the operation is in progress.
+	 * (This implies that the behavior of this call is undefined if the
+	 * specified collection is this collection, and this collection is
+	 * nonempty.)
+	 *
+	 * @param array array containing elements to be added to this collection
+	 * @return {@code true} if this collection changed as a result of the call
+	 * @throws UnsupportedOperationException if the {@code addAll} operation
+	 *         is not supported by this collection
+	 * @throws ClassCastException if the class of an element of the specified
+	 *         collection prevents it from being added to this collection
+	 * @throws NullPointerException if the specified collection contains a
+	 *         null element and this collection does not permit null elements,
+	 *         or if the specified collection is null
+	 * @throws IllegalArgumentException if some property of an element of the
+	 *         specified collection prevents it from being added to this
+	 *         collection
+	 * @throws IllegalStateException if not all the elements can be added at
+	 *         this time due to insertion restrictions
+	 * @see #add(int)
+	 */
+	boolean addAll(int[] array);
+
 	/**
 	 * Removes all of this collection's elements that are also contained in the
 	 * specified collection (optional operation).  After this call returns,

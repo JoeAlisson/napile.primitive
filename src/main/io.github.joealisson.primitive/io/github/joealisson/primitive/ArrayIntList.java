@@ -645,16 +645,19 @@ public class ArrayIntList extends AbstractIntList
      * @throws NullPointerException if the specified collection is null
      */
     public boolean addAll(IntCollection c) {
-        int[] a = c.toArray();
+        return addAll(c.toArray());
+    }
+
+    public boolean addAll(int[] array) {
         modCount++;
-        int numNew = a.length;
+        int numNew = array.length;
         if (numNew == 0)
             return false;
         int[] elementData;
         final int s;
         if (numNew > (elementData = this.elementData).length - (s = size))
             elementData = grow(s + numNew);
-        System.arraycopy(a, 0, elementData, s, numNew);
+        System.arraycopy(array, 0, elementData, s, numNew);
         size = s + numNew;
         return true;
     }
@@ -676,10 +679,14 @@ public class ArrayIntList extends AbstractIntList
      */
     public boolean addAll(int index, IntCollection c) {
         rangeCheckForAdd(index);
+        return addAll(index, c.toArray());
+    }
 
-        int[] a = c.toArray();
+    public boolean addAll(int index, int[] array) {
+        rangeCheckForAdd(index);
+
         modCount++;
-        int numNew = a.length;
+        int numNew = array.length;
         if (numNew == 0)
             return false;
         int[] elementData;
@@ -692,7 +699,7 @@ public class ArrayIntList extends AbstractIntList
             System.arraycopy(elementData, index,
                     elementData, index + numNew,
                     numMoved);
-        System.arraycopy(a, 0, elementData, index, numNew);
+        System.arraycopy(array, 0, elementData, index, numNew);
         size = s + numNew;
         return true;
     }
@@ -1163,6 +1170,20 @@ public class ArrayIntList extends AbstractIntList
             checkForComodification();
             root.addAll(offset + index, c);
             updateSizeAndModCount(cSize);
+            return true;
+        }
+
+        public boolean addAll(int[] array) {
+            return addAll(size, array);
+        }
+
+        public boolean addAll(int index, int[] array) {
+            rangeCheckForAdd(index);
+            if (array.length==0)
+                return false;
+            checkForComodification();
+            root.addAll(offset + index, array);
+            updateSizeAndModCount(array.length);
             return true;
         }
 

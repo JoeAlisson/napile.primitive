@@ -4508,6 +4508,19 @@ public class CHashIntIntMap extends AbstractIntIntMap implements ConcurrentIntIn
             return added;
         }
 
+        public boolean addAll(int[] array) {
+            boolean added = false;
+            int v;
+            if ((v = value) == 0)
+                throw new UnsupportedOperationException();
+            for (int i : array) {
+                if (map.putVal(i, v, true) == 0)
+                    added = true;
+            }
+            return added;
+
+        }
+
         public int hashCode() {
             int h = 0;
             for (var it = iterator(); it.hasNext();)
@@ -4577,6 +4590,9 @@ public class CHashIntIntMap extends AbstractIntIntMap implements ConcurrentIntIn
             throw new UnsupportedOperationException();
         }
         public final boolean addAll(IntCollection c) {
+            throw new UnsupportedOperationException();
+        }
+        public final boolean addAll(int[] array) {
             throw new UnsupportedOperationException();
         }
 

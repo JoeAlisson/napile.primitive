@@ -337,6 +337,35 @@ public interface IntList extends IntCollection {
 	boolean addAll(int index, IntCollection c);
 
 	/**
+	 * Inserts all of the elements in the specified array into this
+	 * list at the specified position (optional operation).  Shifts the
+	 * element currently at that position (if any) and any subsequent
+	 * elements to the right (increases their indices).  The new elements
+	 * will appear in this list in the order that they are returned by the
+	 * specified collection's iterator.  The behavior of this operation is
+	 * undefined if the specified collection is modified while the
+	 * operation is in progress.  (Note that this will occur if the specified
+	 * collection is this list, and it's nonempty.)
+	 *
+	 * @param index index at which to insert the first element from the
+	 *              specified collection
+	 * @param array array containing elements to be added to this list
+	 * @return {@code true} if this list changed as a result of the call
+	 * @throws UnsupportedOperationException if the {@code addAll} operation
+	 *         is not supported by this list
+	 * @throws ClassCastException if the class of an element of the specified
+	 *         collection prevents it from being added to this list
+	 * @throws NullPointerException if the specified collection contains one
+	 *         or more null elements and this list does not permit null
+	 *         elements, or if the specified collection is null
+	 * @throws IllegalArgumentException if some property of an element of the
+	 *         specified collection prevents it from being added to this list
+	 * @throws IndexOutOfBoundsException if the index is out of range
+	 *         ({@code index < 0 || index > size()})
+	 */
+	boolean addAll(int index, int[] array);
+
+	/**
 	 * Removes from this list all of its elements that are contained in the
 	 * specified collection (optional operation).
 	 *

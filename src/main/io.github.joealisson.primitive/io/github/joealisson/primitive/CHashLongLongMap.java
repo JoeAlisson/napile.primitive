@@ -55,7 +55,7 @@ import static java.util.Objects.requireNonNullElse;
 /**
  * A hash table supporting full concurrency of retrievals and
  * high expected concurrency for updates. This class obeys the
- * same functional specification as {@link java.util.Hashtable}, and
+ * same functional specification as {@link Hashtable}, and
  * includes versions of methods corresponding to each method of
  * {@code Hashtable}. However, even though all operations are
  * thread-safe, retrieval operations do <em>not</em> entail locking,
@@ -76,7 +76,7 @@ import static java.util.Objects.requireNonNullElse;
  * Iterators, Spliterators and Enumerations return elements reflecting the
  * state of the hash table at some point at or since the creation of the
  * iterator/enumeration.  They do <em>not</em> throw {@link
- * java.util.ConcurrentModificationException ConcurrentModificationException}.
+ * ConcurrentModificationException ConcurrentModificationException}.
  * However, iterators are designed to be used by only one thread at a time.
  * Bear in mind that the results of aggregate status methods including
  * {@code size}, {@code isEmpty}, and {@code containsValue} are typically
@@ -242,8 +242,8 @@ import static java.util.Objects.requireNonNullElse;
  * @author Doug Lea
  * @param <V> the type of mapped values
  */
-public class CHashIntMap<V> extends AbstractIntMap<V>
-        implements ConcurrentIntMap<V>, Serializable {
+public class CHashLongLongMap<V> extends AbstractLongMap<V>
+        implements ConcurrentLongMap<V>, Serializable {
 
     private static final long serialVersionUID = 6886270481412620144L;
 
@@ -489,25 +489,25 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * exported).  Otherwise, keys and vals are never null.
      */
     static class Node<V> implements Entry<V> {
-        final int hash;
-        final int key;
+        final long hash;
+        final long key;
         volatile V val;
         volatile Node<V> next;
 
-        Node(int hash, int key, V val) {
+        Node(long hash, long key, V val) {
             this.hash = hash;
             this.key = key;
             this.val = val;
         }
 
-        Node(int hash, int key, V val, Node<V> next) {
+        Node(long hash, long key, V val, Node<V> next) {
             this(hash, key, val);
             this.next = next;
         }
 
-        public final int getKey()     { return key; }
+        public final long getKey()     { return key; }
         public final V getValue()   { return val; }
-        public final int hashCode() { return key ^ val.hashCode(); }
+        public final int hashCode() { return Objects.hash(key, val); }
         public final String toString() {
             return key + "=" + val;
         }
@@ -518,7 +518,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         public final boolean equals(Object o) {
             Object v, u; Entry<?> e;
             return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
+                    (v = (e = (Entry<?>)o).getValue()) != null &&
                     (e.getKey() == key) &&
                     (v == (u = val) || v.equals(u)));
         }
@@ -553,15 +553,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
 
     @SuppressWarnings("unchecked")
-    private static <V> Node<V> tabAt(Node<V>[] tab, int i) {
-        return (Node<V>)U.getObjectAcquire(tab, ((long)i << ASHIFT) + ABASE);
+    private static <V> Node<V> tabAt(Node<V>[] tab, long i) {
+        return (Node<V>)U.getObjectAcquire(tab, (i << ASHIFT) + ABASE);
     }
 
-    private static <V> boolean casTabAt(Node<V>[] tab, int i, Node<V> c, Node<V> v) {
-        return U.compareAndSetObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
+    private static <V> boolean casTabAt(Node<V>[] tab, long i, Node<V> c, Node<V> v) {
+        return U.compareAndSetObject(tab, (i << ASHIFT) + ABASE, c, v);
     }
 
-    private static <V> void setTabAt(Node<V>[] tab, int i, Node<V> v) {
+    private static <V> void setTabAt(Node<V>[] tab, long i, Node<V> v) {
         U.putObjectRelease(tab, ((long)i << ASHIFT) + ABASE, v);
     }
 
@@ -621,7 +621,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Creates a new, empty map with the default initial table size (16).
      */
-    public CHashIntMap() {
+    public CHashLongLongMap() {
     }
 
     /**
@@ -634,7 +634,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @throws IllegalArgumentException if the initial capacity of
      * elements is negative
      */
-    public CHashIntMap(int initialCapacity) {
+    public CHashLongLongMap(int initialCapacity) {
         this(initialCapacity, LOAD_FACTOR, 1);
     }
 
@@ -643,7 +643,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @param m the map
      */
-    public CHashIntMap(IntMap<? extends V> m) {
+    public CHashLongLongMap(LongMap<? extends V> m) {
         this.sizeCtl = DEFAULT_CAPACITY;
         putAll(m);
     }
@@ -663,7 +663,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @since 1.6
      */
-    public CHashIntMap(int initialCapacity, float loadFactor) {
+    public CHashLongLongMap(int initialCapacity, float loadFactor) {
         this(initialCapacity, loadFactor, 1);
     }
 
@@ -685,8 +685,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * negative or the load factor or concurrencyLevel are
      * nonpositive
      */
-    public CHashIntMap(int initialCapacity,
-                             float loadFactor, int concurrencyLevel) {
+    public CHashLongLongMap(int initialCapacity,
+                            float loadFactor, int concurrencyLevel) {
         if (!(loadFactor > 0.0f) || initialCapacity < 0 || concurrencyLevel <= 0)
             throw new IllegalArgumentException();
         if (initialCapacity < concurrencyLevel)   // Use at least as many bins
@@ -726,7 +726,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      */
     public V get(int key) {
-        Node<V>[] tab; Node<V> e, p; int n, eh;
+        Node<V>[] tab; Node<V> e, p; int n;
+        long eh;
         int h = ConcurrentMap.spread(key);
         if ((tab = table) != null && (n = tab.length) > 0 && (e = tabAt(tab, (n - 1) & h)) != null) {
 
@@ -798,28 +799,28 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *         {@code null} if there was no mapping for {@code key}
      * @throws NullPointerException if the specified key or value is null
      */
-    public V put(int key, V value) {
+    public V put(long key, V value) {
         return putVal(key, value, false);
     }
 
     /** Implementation for put and putIfAbsent */
-    private V putVal(int key, V value, boolean onlyIfAbsent) {
+    private V putVal(long key, V value, boolean onlyIfAbsent) {
         if (value == null) throw new NullPointerException();
-        int hash = ConcurrentMap.spread(key);
         int binCount = 0;
         for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+            Node<V> f; int n;
+            long i, fh;
             V fv;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
-            else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
-                if (casTabAt(tab, i, null, new Node<>(hash, key, value)))
+            else if ((f = tabAt(tab, i = (n - 1) & key)) == null) {
+                if (casTabAt(tab, i, null, new Node<>(key, key, value)))
                     break;                   // no lock when adding to empty bin
             }
             else if ((fh = f.hash) == MOVED)
                 tab = helpTransfer(tab, f);
             else if (onlyIfAbsent // check first node without acquiring lock
-                    && fh == hash
+                    && fh == key
                     && (f.key == key)
                     && (fv = f.val) != null)
                 return fv;
@@ -830,7 +831,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         if (fh >= 0) {
                             binCount = 1;
                             for (Node<V> e = f;; ++binCount) {
-                                if (e.hash == hash &&
+                                if (e.hash == key &&
                                         (e.key == key )) {
                                     oldVal = e.val;
                                     if (!onlyIfAbsent)
@@ -839,7 +840,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                 }
                                 Node<V> pred = e;
                                 if ((e = e.next) == null) {
-                                    pred.next = new Node<>(hash, key, value);
+                                    pred.next = new Node<>(key, key, value);
                                     break;
                                 }
                             }
@@ -847,8 +848,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         else if (f instanceof TreeBin) {
                             Node<V> p;
                             binCount = 2;
-                            if ((p = ((TreeBin<V>)f).putTreeVal(hash, key,
-                                    value)) != null) {
+                            if ((p = ((TreeBin<V>)f).putTreeVal(key, key, value)) != null) {
                                 oldVal = p.val;
                                 if (!onlyIfAbsent)
                                     p.val = value;
@@ -878,9 +878,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @param m mappings to be stored in this map
      */
-    public void putAll(IntMap<? extends V> m) {
+    public void putAll(LongMap<? extends V> m) {
         tryPresize(m.size());
-        for (IntMap.Entry<? extends V> e : m.entrySet())
+        for (Entry<? extends V> e : m.entrySet())
             putVal(e.getKey(), e.getValue(), false);
     }
 
@@ -902,10 +902,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Replaces node value with v, conditional upon match of cv if
      * non-null.  If resulting value is null, delete.
      */
-    private V replaceNode(int key, V value, Object cv) {
-        int hash = ConcurrentMap.spread(key);
+    private V replaceNode(long key, V value, Object cv) {
+        long hash = ConcurrentMap.spread(key);
         for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+            Node<V> f; int n;
+            long i, fh;
             if (tab == null || (n = tab.length) == 0 || (f = tabAt(tab, i = (n - 1) & hash)) == null)
                 break;
             else if ((fh = f.hash) == MOVED)
@@ -977,7 +978,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         int i = 0;
         Node<V>[] tab = table;
         while (tab != null && i < tab.length) {
-            int fh;
+            long fh;
             Node<V> f = tabAt(tab, i);
             if (f == null)
                 ++i;
@@ -1069,7 +1070,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * @return the set view
      */
-    public Set<IntMap.Entry<V>> entrySet() {
+    public Set<Entry<V>> entrySet() {
         EntrySetView<V> es;
         if ((es = entrySet) != null) return es;
         return entrySet = new EntrySetView<>(this);
@@ -1105,9 +1106,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
     public boolean equals(Object o) {
         if (o != this) {
-            if (!(o instanceof IntMap))
+            if (!(o instanceof LongMap))
                 return false;
-            IntMap<?> m = (IntMap<?>) o;
+            LongMap<?> m = (LongMap<?>) o;
             Node<V>[] t;
             int f = (t = table) == null ? 0 : t.length;
             Traverser<V> it = new Traverser<V>(t, f, 0, f);
@@ -1117,7 +1118,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 if (v == null || (v != val && !v.equals(val)))
                     return false;
             }
-            for (IntMap.Entry<?> e : m.entrySet()) {
+            for (Entry<?> e : m.entrySet()) {
                 Object mv, v;
                 if ((mv = e.getValue()) == null ||
                         (v = get(e.getKey())) == null ||
@@ -1228,11 +1229,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             while (p != null) {
                 boolean insertAtFront;
                 Node<V> next = p.next, first;
-                int h = p.hash, j = h & mask;
+                long h = p.hash, j = h & mask;
                 if ((first = tabAt(tab, j)) == null)
                     insertAtFront = true;
                 else {
-                    int k = p.key;
+                    long k = p.key;
                     if (first.hash < 0) {
                         TreeBin<V> t = (TreeBin<V>)first;
                         if (t.putTreeVal(h, k, p.val) == null)
@@ -1242,10 +1243,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     else {
                         int binCount = 0;
                         insertAtFront = true;
-                        Node<V> q; int qk;
+                        Node<V> q;
                         for (q = first; q != null; q = q.next) {
                             if (q.hash == h &&
-                                    ((qk = q.key) == k )) {
+                                    (q.key == k )) {
                                 insertAtFront = false;
                                 break;
                             }
@@ -1345,7 +1346,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         return (v = get(key)) == null ? defaultValue : v;
     }
 
-    public void forEach(IntBiConsumer<? super V> action) {
+    public void forEach(LongBiConsumer<? super V> action) {
         if (action == null) throw new NullPointerException();
         Node<V>[] t;
         if ((t = table) != null) {
@@ -1356,14 +1357,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
     }
 
-    public void replaceAll(IntBiFunction<? super V, ? extends V> function) {
+    public void replaceAll(LongBiFunction<? super V, ? extends V> function) {
         if (function == null) throw new NullPointerException();
         Node<V>[] t;
         if ((t = table) != null) {
             Traverser<V> it = new Traverser<>(t, t.length, 0, t.length);
             for (Node<V> p; (p = it.advance()) != null; ) {
                 V oldValue = p.val;
-                for (int key = p.key;;) {
+                for (long key = p.key;;) {
                     V newValue = function.apply(key, oldValue);
                     if (newValue == null)
                         throw new NullPointerException();
@@ -1385,9 +1386,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         if ((t = table) != null) {
             Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
             for (Node<V> p; (p = it.advance()) != null; ) {
-                int k = p.key;
+                long k = p.key;
                 V v = p.val;
-                IntMap.Entry<V> e = new AbstractIntMap.SimpleImmutableEntry<>(k, v);
+                Entry<V> e = new SimpleImmutableEntry<>(k, v);
                 if (function.test(e) && replaceNode(k, null, v) != null)
                     removed = true;
             }
@@ -1405,7 +1406,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         if ((t = table) != null) {
             Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
             for (Node<V> p; (p = it.advance()) != null; ) {
-                int k = p.key;
+                long k = p.key;
                 V v = p.val;
                 if (function.test(v) && replaceNode(k, null, v) != null)
                     removed = true;
@@ -1443,7 +1444,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         V val = null;
         int binCount = 0;
         for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh; int fk; V fv;
+            Node<V> f; int n, i; V fv;
+            long fh, fk;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null) {
@@ -1476,9 +1478,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         if (fh >= 0) {
                             binCount = 1;
                             for (Node<V> e = f;; ++binCount) {
-                                int ek;
                                 if (e.hash == h &&
-                                        ((ek = e.key) == key )) {
+                                        (e.key == key )) {
                                     val = e.val;
                                     break;
                                 }
@@ -1552,7 +1553,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         int delta = 0;
         int binCount = 0;
         for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+            Node<V> f; int n, i;
+            long fh;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null)
@@ -1565,9 +1567,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         if (fh >= 0) {
                             binCount = 1;
                             for (Node<V> e = f, pred = null;; ++binCount) {
-                                int ek;
                                 if (e.hash == h &&
-                                        ((ek = e.key) == key)) {
+                                        (e.key == key)) {
                                     val = remappingFunction.apply(key, e.val);
                                     if (val != null)
                                         e.val = val;
@@ -1644,7 +1645,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         int delta = 0;
         int binCount = 0;
         for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+            Node<V> f; int n, i;
+            long fh;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null) {
@@ -1674,9 +1676,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         if (fh >= 0) {
                             binCount = 1;
                             for (Node<V> e = f, pred = null;; ++binCount) {
-                                int ek;
                                 if (e.hash == h &&
-                                        ((ek = e.key) == key )) {
+                                        (e.key == key )) {
                                     val = remappingFunction.apply(key, e.val);
                                     if (val != null)
                                         e.val = val;
@@ -1771,7 +1772,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         int delta = 0;
         int binCount = 0;
         for (Node<V>[] tab = table;;) {
-            Node<V> f; int n, i, fh;
+            Node<V> f; int n, i;
+            long fh;
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
             else if ((f = tabAt(tab, i = (n - 1) & h)) == null) {
@@ -1789,9 +1791,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         if (fh >= 0) {
                             binCount = 1;
                             for (Node<V> e = f, pred = null;; ++binCount) {
-                                int ek;
                                 if (e.hash == h &&
-                                        ((ek = e.key) == key )) {
+                                        (e.key == key )) {
                                     val = remappingFunction.apply(e.val, value);
                                     if (val != null)
                                         e.val = val;
@@ -1859,7 +1860,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      *
      * <p>Note that this method is identical in functionality to
      * {@link #containsValue(Object)}, and exists solely to ensure
-     * full compatibility with class {@link java.util.Hashtable},
+     * full compatibility with class {@link Hashtable},
      * which supported this method prior to introduction of the
      * Java Collections Framework.
      *
@@ -1880,7 +1881,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @return an iterator of the keys in this table
      * @see #keySet()
      */
-    public PrimitiveIterator.OfInt keys() {
+    public PrimitiveIterator.OfLong keys() {
         Node<V>[] t;
         int f = (t = table) == null ? 0 : t.length;
         return new KeyIterator<V>(t, f, 0, f, this);
@@ -1924,7 +1925,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
     public static  KeySetView<Boolean> newKeySet() {
         return new KeySetView<Boolean>
-                (new CHashIntMap<Boolean>(), Boolean.TRUE);
+                (new CHashLongLongMap<Boolean>(), Boolean.TRUE);
     }
 
     /**
@@ -1941,7 +1942,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      */
     public static KeySetView<Boolean> newKeySet(int initialCapacity) {
         return new KeySetView<Boolean>
-                (new CHashIntMap<Boolean>(initialCapacity), Boolean.TRUE);
+                (new CHashLongLongMap<Boolean>(initialCapacity), Boolean.TRUE);
     }
 
     /**
@@ -1981,7 +1982,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         (e = tabAt(tab, (n - 1) & h)) == null)
                     return null;
                 for (;;) {
-                    int eh;
+                    long eh;
                     if ((eh = e.hash) == h &&
                             (e.key == k))
                         return e;
@@ -2182,7 +2183,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         boolean advance = true;
         boolean finishing = false; // to ensure sweep before committing nextTab
         for (int i = 0, bound = 0;;) {
-            Node<V> f; int fh;
+            Node<V> f; long fh;
             while (advance) {
                 int nextIndex, nextBound;
                 if (--i >= bound || finishing)
@@ -2224,10 +2225,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     if (tabAt(tab, i) == f) {
                         Node<V> ln, hn;
                         if (fh >= 0) {
-                            int runBit = fh & n;
+                            long runBit = fh & n;
                             Node<V> lastRun = f;
                             for (Node<V> p = f.next; p != null; p = p.next) {
-                                int b = p.hash & n;
+                                long b = p.hash & n;
                                 if (b != runBit) {
                                     runBit = b;
                                     lastRun = p;
@@ -2242,7 +2243,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                                 ln = null;
                             }
                             for (Node<V> p = f; p != lastRun; p = p.next) {
-                                int ph = p.hash; int pk = p.key; V pv = p.val;
+                                long ph = p.hash; long pk = p.key; V pv = p.val;
                                 if ((ph & n) == 0)
                                     ln = new Node<V>(ph, pk, pv, ln);
                                 else
@@ -2259,7 +2260,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             TreeNode<V> hi = null, hiTail = null;
                             int lc = 0, hc = 0;
                             for (Node<V> e = t.first; e != null; e = e.next) {
-                                int h = e.hash;
+                                long h = e.hash;
                                 TreeNode<V> p = new TreeNode<V>
                                         (h, e.key, e.val, null, null);
                                 if ((h & n) == 0) {
@@ -2400,7 +2401,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Replaces all linked nodes in bin at given index unless table is
      * too small, in which case resizes instead.
      */
-    private final void treeifyBin(Node<V>[] tab, int index) {
+    private final void treeifyBin(Node<V>[] tab, long index) {
         Node<V> b; int n;
         if (tab != null) {
             if ((n = tab.length) < MIN_TREEIFY_CAPACITY)
@@ -2454,7 +2455,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         TreeNode<V> prev;    // needed to unlink next upon deletion
         boolean red;
 
-        TreeNode(int hash, int key, V val, Node<V> next,
+        TreeNode(long hash, long key, V val, Node<V> next,
                  TreeNode<V> parent) {
             super(hash, key, val, next);
             this.parent = parent;
@@ -2468,10 +2469,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * Returns the TreeNode (or null if not found) for the given key
          * starting at given root.
          */
-        final TreeNode<V> findTreeNode(int h, int k, Class<?> kc) {
+        final TreeNode<V> findTreeNode(long h, long k, Class<?> kc) {
             TreeNode<V> p = this;
             do {
-                int ph, dir; int pk; TreeNode<V> q;
+                int dir; TreeNode<V> q;
+                long ph, pk;
                 TreeNode<V> pl = p.left, pr = p.right;
                 if ((ph = p.hash) > h)
                     p = pl;
@@ -2548,12 +2550,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     r = x;
                 }
                 else {
-                    int k = x.key;
-                    int h = x.hash;
+                    long k = x.key;
+                    long h = x.hash;
                     Class<?> kc = null;
                     for (TreeNode<V> p = r;;) {
-                        int dir, ph;
-                        int pk = p.key;
+                        int dir;
+                        long ph;
+                        long pk = p.key;
                         if ((ph = p.hash) > h)
                             dir = -1;
                         else if (ph < h)
@@ -2625,10 +2628,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          */
         final Node<V> find(int h, int k) {
             for (Node<V> e = first; e != null; ) {
-                int s; int ek;
+                int s;
                 if (((s = lockState) & (WAITER|WRITER)) != 0) {
                     if (e.hash == h &&
-                            ((ek = e.key) == k ))
+                            (e.key == k ))
                         return e;
                     e = e.next;
                 }
@@ -2654,11 +2657,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * Finds or adds a node.
          * @return null if added
          */
-        final TreeNode<V> putTreeVal(int h, int k, V v) {
+        final TreeNode<V> putTreeVal(long h, long k, V v) {
             Class<?> kc = null;
             boolean searched = false;
             for (TreeNode<V> p = root;;) {
-                int dir, ph; int pk;
+                int dir;
+                long ph, pk;
                 if (p == null) {
                     first = root = new TreeNode<V>(h, k, v, null, null);
                     break;
@@ -3154,10 +3158,10 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Traverser to support iterator.remove.
      */
     static class BaseIterator<V> extends Traverser<V> {
-        final CHashIntMap<V> map;
+        final CHashLongLongMap<V> map;
         Node<V> lastReturned;
         BaseIterator(Node<V>[] tab, int size, int index, int limit,
-                     CHashIntMap<V> map) {
+                     CHashLongLongMap<V> map) {
             super(tab, size, index, limit);
             this.map = map;
             advance();
@@ -3175,17 +3179,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     }
 
     static final class KeyIterator<V> extends BaseIterator<V>
-            implements PrimitiveIterator.OfInt {
+            implements PrimitiveIterator.OfLong {
         KeyIterator(Node<V>[] tab, int size, int index, int limit,
-                    CHashIntMap<V> map) {
+                    CHashLongLongMap<V> map) {
             super(tab, size, index, limit, map);
         }
 
-        public final int nextInt() {
+        public final long nextLong() {
             Node<V> p;
             if ((p = next) == null)
                 throw new NoSuchElementException();
-            int k = p.key;
+            long k = p.key;
             lastReturned = p;
             advance();
             return k;
@@ -3195,7 +3199,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     static final class ValueIterator<V> extends BaseIterator<V>
             implements Iterator<V> {
         ValueIterator(Node<V>[] tab, int size, int index, int limit,
-                      CHashIntMap<V> map) {
+                      CHashLongLongMap<V> map) {
             super(tab, size, index, limit, map);
         }
 
@@ -3211,17 +3215,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     }
 
     static final class EntryIterator<V> extends BaseIterator<V>
-            implements Iterator<IntMap.Entry<V>> {
+            implements Iterator<Entry<V>> {
         EntryIterator(Node<V>[] tab, int size, int index, int limit,
-                      CHashIntMap<V> map) {
+                      CHashLongLongMap<V> map) {
             super(tab, size, index, limit, map);
         }
 
-        public final IntMap.Entry<V> next() {
+        public final Entry<V> next() {
             Node<V> p;
             if ((p = next) == null)
                 throw new NoSuchElementException();
-            int k = p.key;
+            long k = p.key;
             V v = p.val;
             lastReturned = p;
             advance();
@@ -3232,26 +3236,26 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     /**
      * Exported Entry for EntryIterator.
      */
-    static final class MapEntry<V> implements IntMap.Entry<V> {
-        final int key; // non-null
+    static final class MapEntry<V> implements Entry<V> {
+        final long key;
         V val;       // non-null
-        final CHashIntMap<V> map;
-        MapEntry(int key, V val, CHashIntMap<V> map) {
+        final CHashLongLongMap<V> map;
+        MapEntry(long key, V val, CHashLongLongMap<V> map) {
             this.key = key;
             this.val = val;
             this.map = map;
         }
-        public int getKey()        { return key; }
+        public long getKey()        { return key; }
         public V getValue()      { return val; }
-        public int hashCode()    { return key ^ val.hashCode(); }
+        public int hashCode()    { return Objects.hash(key, val); }
         public String toString() {
             return key + "=" + val;
         }
 
         public boolean equals(Object o) {
-            Object k, v; IntMap.Entry<?> e;
+            Object k, v; Entry<?> e;
             return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
+                    (v = (e = (Entry<?>)o).getValue()) != null &&
                     (e.getKey() == key) &&
                     (v == val || v.equals(val)));
         }
@@ -3274,7 +3278,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     }
 
     static final class KeySpliterator<V> extends Traverser<V>
-            implements Spliterator.OfInt {
+            implements Spliterator.OfLong {
         long est;               // size estimate
         KeySpliterator(Node<V>[] tab, int size, int index, int limit,
                        long est) {
@@ -3289,13 +3293,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             f, est >>>= 1);
         }
 
-        public void forEachRemaining(IntConsumer action) {
+        public void forEachRemaining(LongConsumer action) {
             if (action == null) throw new NullPointerException();
             for (Node<V> p; (p = advance()) != null;)
                 action.accept(p.key);
         }
 
-        public boolean tryAdvance(IntConsumer action) {
+        public boolean tryAdvance(LongConsumer action) {
             if (action == null) throw new NullPointerException();
             Node<V> p;
             if ((p = advance()) == null)
@@ -3351,11 +3355,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     }
 
     static final class EntrySpliterator<V> extends Traverser<V>
-            implements Spliterator<IntMap.Entry<V>> {
-        final CHashIntMap<V> map; // To export MapEntry
+            implements Spliterator<Entry<V>> {
+        final CHashLongLongMap<V> map; // To export MapEntry
         long est;               // size estimate
         EntrySpliterator(Node<V>[] tab, int size, int index, int limit,
-                         long est, CHashIntMap<V> map) {
+                         long est, CHashLongLongMap<V> map) {
             super(tab, size, index, limit);
             this.map = map;
             this.est = est;
@@ -3368,13 +3372,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             f, est >>>= 1, map);
         }
 
-        public void forEachRemaining(Consumer<? super IntMap.Entry<V>> action) {
+        public void forEachRemaining(Consumer<? super Entry<V>> action) {
             if (action == null) throw new NullPointerException();
             for (Node<V> p; (p = advance()) != null; )
                 action.accept(new MapEntry<V>(p.key, p.val, map));
         }
 
-        public boolean tryAdvance(Consumer<? super IntMap.Entry<V>> action) {
+        public boolean tryAdvance(Consumer<? super Entry<V>> action) {
             if (action == null) throw new NullPointerException();
             Node<V> p;
             if ((p = advance()) == null)
@@ -3418,7 +3422,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public void forEach(long parallelismThreshold,
-                        IntBiConsumer<? super V> action) {
+                        LongBiConsumer<? super V> action) {
         if (action == null) throw new NullPointerException();
         new ForEachMappingTask<V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -3439,7 +3443,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> void forEach(long parallelismThreshold,
-                            IntBiFunction<? super V, ? extends U> transformer,
+                            LongBiFunction<? super V, ? extends U> transformer,
                             Consumer<? super U> action) {
         if (transformer == null || action == null)
             throw new NullPointerException();
@@ -3465,7 +3469,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U search(long parallelismThreshold,
-                        IntBiFunction<? super V, ? extends U> searchFunction) {
+                        LongBiFunction<? super V, ? extends U> searchFunction) {
         if (searchFunction == null) throw new NullPointerException();
         return new SearchMappingsTask<V,U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -3489,7 +3493,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U reduce(long parallelismThreshold,
-                        IntBiFunction<? super V, ? extends U> transformer,
+                        LongBiFunction<? super V, ? extends U> transformer,
                         BiFunction<? super U, ? super U, ? extends U> reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
@@ -3514,7 +3518,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public double reduceToDouble(long parallelismThreshold,
-                                 ToDoubleIntBiFunction<? super V> transformer,
+                                 ToDoubleLongBiFunction<? super V> transformer,
                                  double basis,
                                  DoubleBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -3540,38 +3544,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public long reduceToLong(long parallelismThreshold,
-                             ToLongIntBiFunction<? super V> transformer,
+                             ToLongLongBiFunction<? super V> transformer,
                              long basis,
                              LongBinaryOperator reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
         return new MapReduceMappingsToLongTask<V>
-                (null, batchFor(parallelismThreshold), 0, 0, table,
-                        null, transformer, basis, reducer).invoke();
-    }
-
-    /**
-     * Returns the result of accumulating the given transformation
-     * of all (key, value) pairs using the given reducer to
-     * combine values, and the given basis as an identity value.
-     *
-     * @param parallelismThreshold the (estimated) number of elements
-     * needed for this operation to be executed in parallel
-     * @param transformer a function returning the transformation
-     * for an element
-     * @param basis the identity (initial default value) for the reduction
-     * @param reducer a commutative associative combining function
-     * @return the result of accumulating the given transformation
-     * of all (key, value) pairs
-     * @since 1.8
-     */
-    public int reduceToInt(long parallelismThreshold,
-                           ToIntIntBiFunction<? super V> transformer,
-                           int basis,
-                           IntBinaryOperator reducer) {
-        if (transformer == null || reducer == null)
-            throw new NullPointerException();
-        return new MapReduceMappingsToIntTask<V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         null, transformer, basis, reducer).invoke();
     }
@@ -3585,7 +3563,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public void forEachKey(long parallelismThreshold,
-                           IntConsumer action) {
+                           LongConsumer action) {
         if (action == null) throw new NullPointerException();
         new ForEachKeyTask<>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -3606,7 +3584,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> void forEachKey(long parallelismThreshold,
-                               IntFunction<? extends U> transformer,
+                               LongFunction<? extends U> transformer,
                                Consumer<? super U> action) {
         if (transformer == null || action == null)
             throw new NullPointerException();
@@ -3632,7 +3610,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U searchKeys(long parallelismThreshold,
-                            IntFunction<? extends U> searchFunction) {
+                            LongFunction<? extends U> searchFunction) {
         if (searchFunction == null) throw new NullPointerException();
         return new SearchKeysTask<V,U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -3650,8 +3628,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * reducer to combine values, or null if none
      * @since 1.8
      */
-    public int reduceKeys(long parallelismThreshold,
-                        IntToIntBiFunction reducer) {
+    public long reduceKeys(long parallelismThreshold,
+                        LongToLongBiFunction reducer) {
         if (reducer == null) throw new NullPointerException();
         return new ReduceKeysTask<V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -3675,7 +3653,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U reduceKeys(long parallelismThreshold,
-                            IntFunction<? extends U> transformer,
+                            LongFunction<? extends U> transformer,
                             BiFunction<? super U, ? super U, ? extends U> reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
@@ -3700,7 +3678,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public double reduceKeysToDouble(long parallelismThreshold,
-                                     ToDoubleIntFunction transformer,
+                                     ToDoubleLongFunction transformer,
                                      double basis,
                                      DoubleBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -3726,38 +3704,12 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public long reduceKeysToLong(long parallelismThreshold,
-                                 ToLongIntFunction transformer,
+                                 LongToLongFunction transformer,
                                  long basis,
                                  LongBinaryOperator reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
         return new MapReduceKeysToLongTask<V>
-                (null, batchFor(parallelismThreshold), 0, 0, table,
-                        null, transformer, basis, reducer).invoke();
-    }
-
-    /**
-     * Returns the result of accumulating the given transformation
-     * of all keys using the given reducer to combine values, and
-     * the given basis as an identity value.
-     *
-     * @param parallelismThreshold the (estimated) number of elements
-     * needed for this operation to be executed in parallel
-     * @param transformer a function returning the transformation
-     * for an element
-     * @param basis the identity (initial default value) for the reduction
-     * @param reducer a commutative associative combining function
-     * @return the result of accumulating the given transformation
-     * of all keys
-     * @since 1.8
-     */
-    public int reduceKeysToInt(long parallelismThreshold,
-                               ToIntIntFunction transformer,
-                               int basis,
-                               IntBinaryOperator reducer) {
-        if (transformer == null || reducer == null)
-            throw new NullPointerException();
-        return new MapReduceKeysToIntTask<V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
                         null, transformer, basis, reducer).invoke();
     }
@@ -3957,7 +3909,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public void forEachEntry(long parallelismThreshold,
-                             Consumer<? super IntMap.Entry<V>> action) {
+                             Consumer<? super Entry<V>> action) {
         if (action == null) throw new NullPointerException();
         new ForEachEntryTask<V>(null, batchFor(parallelismThreshold), 0, 0, table,
                 action).invoke();
@@ -3977,7 +3929,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> void forEachEntry(long parallelismThreshold,
-                                 Function<IntMap.Entry<V>, ? extends U> transformer,
+                                 Function<Entry<V>, ? extends U> transformer,
                                  Consumer<? super U> action) {
         if (transformer == null || action == null)
             throw new NullPointerException();
@@ -4003,7 +3955,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U searchEntries(long parallelismThreshold,
-                               Function<IntMap.Entry<V>, ? extends U> searchFunction) {
+                               Function<Entry<V>, ? extends U> searchFunction) {
         if (searchFunction == null) throw new NullPointerException();
         return new SearchEntriesTask<V,U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4020,8 +3972,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @return the result of accumulating all entries
      * @since 1.8
      */
-    public IntMap.Entry<V> reduceEntries(long parallelismThreshold,
-                                        BiFunction<IntMap.Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer) {
+    public Entry<V> reduceEntries(long parallelismThreshold,
+                                        BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer) {
         if (reducer == null) throw new NullPointerException();
         return new ReduceEntriesTask<V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4045,7 +3997,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public <U> U reduceEntries(long parallelismThreshold,
-                               Function<IntMap.Entry<V>, ? extends U> transformer,
+                               Function<Entry<V>, ? extends U> transformer,
                                BiFunction<? super U, ? super U, ? extends U> reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
@@ -4070,7 +4022,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public double reduceEntriesToDouble(long parallelismThreshold,
-                                        ToDoubleFunction<IntMap.Entry<V>> transformer,
+                                        ToDoubleFunction<Entry<V>> transformer,
                                         double basis,
                                         DoubleBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4096,7 +4048,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public long reduceEntriesToLong(long parallelismThreshold,
-                                    ToLongFunction<IntMap.Entry<V>> transformer,
+                                    ToLongFunction<Entry<V>> transformer,
                                     long basis,
                                     LongBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4122,7 +4074,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public int reduceEntriesToInt(long parallelismThreshold,
-                                  ToIntFunction<IntMap.Entry<V>> transformer,
+                                  ToIntFunction<Entry<V>> transformer,
                                   int basis,
                                   IntBinaryOperator reducer) {
         if (transformer == null || reducer == null)
@@ -4139,17 +4091,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * Base class for views.
      */
     abstract static class CollectionView<V,E>
-            implements Collection<E>, java.io.Serializable {
+            implements Collection<E>, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
-        final CHashIntMap<V> map;
-        CollectionView(CHashIntMap<V> map)  { this.map = map; }
+        final CHashLongLongMap<V> map;
+        CollectionView(CHashLongLongMap<V> map)  { this.map = map; }
 
         /**
          * Returns the map backing this view.
          *
          * @return the map backing this view
          */
-        public CHashIntMap<V> getMap() { return map; }
+        public CHashLongLongMap<V> getMap() { return map; }
 
         /**
          * Removes all of the elements from this view, by removing all
@@ -4312,11 +4264,11 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * @since 1.8
      */
     public static class KeySetView<V>
-            implements IntSet, java.io.Serializable {
+            implements LongSet, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
         private final V value;
-        final CHashIntMap<V> map;
-        KeySetView(CHashIntMap<V> map, V value) {  // non-public
+        final CHashLongLongMap<V> map;
+        KeySetView(CHashLongLongMap<V> map, V value) {  // non-public
             this.map = map;
             this.value = value;
         }
@@ -4326,7 +4278,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          *
          * @return the map backing this view
          */
-        public CHashIntMap<V> getMap() { return map; }
+        public CHashLongLongMap<V> getMap() { return map; }
 
         /**
          * Removes all of the elements from this view, by removing all
@@ -4348,7 +4300,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         /**
          * {@inheritDoc}
          */
-        public boolean contains(int o) { return map.containsKey(o); }
+        public boolean contains(long o) { return map.containsKey(o); }
 
         /**
          * Removes the key from this map view, by removing the key (and its
@@ -4358,26 +4310,26 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * @param  o the key to be removed from the backing map
          * @return {@code true} if the backing map contained the specified key
          */
-        public boolean remove(int o) { return map.remove(o) != null; }
+        public boolean remove(long o) { return map.remove(o) != null; }
 
         /**
          * @return an iterator over the keys of the backing map
          */
-        public PrimitiveIterator.OfInt iterator() {
+        public PrimitiveIterator.OfLong iterator() {
             Node<V>[] t;
-            CHashIntMap<V> m = map;
+            CHashLongLongMap<V> m = map;
             int f = (t = m.table) == null ? 0 : t.length;
             return new KeyIterator<>(t, f, 0, f, m);
         }
 
         private static final String OOME_MSG = "Required array size too large";
 
-        public final int[] toArray() {
+        public final long[] toArray() {
             long sz = map.mappingCount();
             if (sz > MAX_ARRAY_SIZE)
                 throw new OutOfMemoryError(OOME_MSG);
             int n = (int)sz;
-            int[] r = new int[n];
+            long[] r = new long[n];
             int i = 0;
 
             for (var it = iterator();  it.hasNext();) {
@@ -4390,17 +4342,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         n += (n >>> 1) + 1;
                     r = Arrays.copyOf(r, n);
                 }
-                r[i++] = it.nextInt();
+                r[i++] = it.nextLong();
             }
             return (i == n) ? r : Arrays.copyOf(r, i);
         }
 
-        public final int[] toArray(int[] a) {
+        public final long[] toArray(long[] a) {
             long sz = map.mappingCount();
             if (sz > MAX_ARRAY_SIZE)
                 throw new OutOfMemoryError(OOME_MSG);
             int m = (int)sz;
-            int[] r = (a.length >= m) ? a : new int[m];
+            long[] r = (a.length >= m) ? a : new long[m];
             int n = r.length;
             int i = 0;
 
@@ -4414,7 +4366,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                         n += (n >>> 1) + 1;
                     r = Arrays.copyOf(r, n);
                 }
-                r[i++] = it.nextInt();
+                r[i++] = it.nextLong();
             }
             if (a == r && i < n) {
                 r[i] = 0; // null-terminate
@@ -4440,7 +4392,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             var it = iterator();
             if (it.hasNext()) {
                 for (;;) {
-                    sb.append(it.nextInt());
+                    sb.append(it.nextLong());
                     if (!it.hasNext())
                         break;
                     sb.append(',').append(' ');
@@ -4449,17 +4401,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
             return sb.append(']').toString();
         }
 
-        public final boolean containsAll(IntCollection c) {
+        public final boolean containsAll(LongCollection c) {
             if (c != this) {
                 for (var it = c.iterator(); it.hasNext();) {
-                    if (!contains(it.nextInt()))
+                    if (!contains(it.nextLong()))
                         return false;
                 }
             }
             return true;
         }
 
-        public boolean removeAll(IntCollection c) {
+        public boolean removeAll(LongCollection c) {
             if (c == null) throw new NullPointerException();
             boolean modified = false;
             // Use (c instanceof Set) as a hint that lookup in c is as
@@ -4469,23 +4421,23 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 return false;
             } else if (c instanceof IntSet && c.size() > t.length) {
                 for (var it = iterator(); it.hasNext(); ) {
-                    if (c.contains(it.nextInt())) {
+                    if (c.contains(it.nextLong())) {
                         it.remove();
                         modified = true;
                     }
                 }
             } else {
                 for (var it = iterator(); it.hasNext();)
-                    modified |= remove(it.nextInt());
+                    modified |= remove(it.nextLong());
             }
             return modified;
         }
 
-        public final boolean retainAll(IntCollection c) {
+        public final boolean retainAll(LongCollection c) {
             if (c == null) throw new NullPointerException();
             boolean modified = false;
             for (var it = iterator(); it.hasNext();) {
-                if (!c.contains(it.nextInt())) {
+                if (!c.contains(it.nextLong())) {
                     it.remove();
                     modified = true;
                 }
@@ -4503,7 +4455,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * @throws UnsupportedOperationException if no default mapped value
          * for additions was provided
          */
-        public boolean add(int e) {
+        public boolean add(long e) {
             V v;
             if ((v = value) == null)
                 throw new UnsupportedOperationException();
@@ -4521,25 +4473,13 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
          * @throws UnsupportedOperationException if no default mapped value
          * for additions was provided
          */
-        public boolean addAll(IntCollection c) {
+        public boolean addAll(LongCollection c) {
             boolean added = false;
             V v;
             if ((v = value) == null)
                 throw new UnsupportedOperationException();
             for (var it = c.iterator(); it.hasNext();) {
-                if (map.putVal(it.nextInt(), v, true) == null)
-                    added = true;
-            }
-            return added;
-        }
-
-        public boolean addAll(int[] array) {
-            boolean added = false;
-            V v;
-            if ((v = value) == null)
-                throw new UnsupportedOperationException();
-            for (int i : array) {
-                if (map.putVal(i, v, true) == null)
+                if (map.putVal(it.nextLong(), v, true) == null)
                     added = true;
             }
             return added;
@@ -4548,26 +4488,26 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         public int hashCode() {
             int h = 0;
             for (var it = iterator(); it.hasNext();)
-                h += it.nextInt();
+                h += it.nextLong();
             return h;
         }
 
         public boolean equals(Object o) {
-            IntSet c;
-            return ((o instanceof IntSet) &&
-                    ((c = (IntSet)o) == this ||
+            LongSet c;
+            return ((o instanceof LongSet) &&
+                    ((c = (LongSet)o) == this ||
                             (containsAll(c) && c.containsAll(this))));
         }
 
-        public Spliterator.OfInt spliterator() {
+        public Spliterator.OfLong spliterator() {
             Node<V>[] t;
-            CHashIntMap<V> m = map;
+            CHashLongLongMap<V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new KeySpliterator<V>(t, f, 0, f, n < 0L ? 0L : n);
         }
 
-        public void forEach(IntConsumer action) {
+        public void forEach(LongConsumer action) {
             if (action == null) throw new NullPointerException();
             Node<V>[] t;
             if ((t = map.table) != null) {
@@ -4584,9 +4524,9 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * directly instantiated. See {@link #values()}.
      */
     static final class ValuesView<V> extends CollectionView<V,V>
-            implements Collection<V>, java.io.Serializable {
+            implements Collection<V>, Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
-        ValuesView(CHashIntMap<V> map) { super(map); }
+        ValuesView(CHashLongLongMap<V> map) { super(map); }
         public final boolean contains(Object o) {
             return map.containsValue(o);
         }
@@ -4604,7 +4544,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
 
         public final Iterator<V> iterator() {
-            CHashIntMap<V> m = map;
+            CHashLongLongMap<V> m = map;
             Node<V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
             return new ValueIterator<V>(t, f, 0, f, m);
@@ -4635,7 +4575,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
 
         public Spliterator<V> spliterator() {
             Node<V>[] t;
-            CHashIntMap<V> m = map;
+            CHashLongLongMap<V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new ValueSpliterator<V>(t, f, 0, f, n < 0L ? 0L : n);
@@ -4657,32 +4597,32 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
      * entries.  This class cannot be directly instantiated. See
      * {@link #entrySet()}.
      */
-    static final class EntrySetView<V> extends CollectionView<V,IntMap.Entry<V>>
-            implements Set<IntMap.Entry<V>>, java.io.Serializable {
+    static final class EntrySetView<V> extends CollectionView<V, Entry<V>>
+            implements Set<Entry<V>>, Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
-        EntrySetView(CHashIntMap<V> map) { super(map); }
+        EntrySetView(CHashLongLongMap<V> map) { super(map); }
 
         public boolean contains(Object o) {
-            Object v, r; IntMap.Entry<?> e;
+            Object v, r; Entry<?> e;
             int k;
             return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
+                    (v = (e = (Entry<?>)o).getValue()) != null &&
                     (r = map.get(e.getKey())) != null &&
                     (v == r || v.equals(r)));
         }
 
         public boolean remove(Object o) {
-            Object v; IntMap.Entry<?> e;
+            Object v; Entry<?> e;
             return ((o instanceof IntMap.Entry) &&
-                    (v = (e = (IntMap.Entry<?>)o).getValue()) != null &&
+                    (v = (e = (Entry<?>)o).getValue()) != null &&
                     map.remove(e.getKey(), v));
         }
 
         /**
          * @return an iterator over the entries of the backing map
          */
-        public Iterator<IntMap.Entry<V>> iterator() {
-            CHashIntMap<V> m = map;
+        public Iterator<Entry<V>> iterator() {
+            CHashLongLongMap<V> m = map;
             Node<V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
             return new EntryIterator<V>(t, f, 0, f, m);
@@ -4724,15 +4664,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             (containsAll(c) && c.containsAll(this))));
         }
 
-        public Spliterator<IntMap.Entry<V>> spliterator() {
+        public Spliterator<Entry<V>> spliterator() {
             Node<V>[] t;
-            CHashIntMap<V> m = map;
+            CHashLongLongMap<V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new EntrySpliterator<V>(t, f, 0, f, n < 0L ? 0L : n, m);
         }
 
-        public void forEach(Consumer<? super IntMap.Entry<V>> action) {
+        public void forEach(Consumer<? super Entry<V>> action) {
             if (action == null) throw new NullPointerException();
             Node<V>[] t;
             if ((t = map.table) != null) {
@@ -4848,15 +4788,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class ForEachKeyTask<V>
             extends BulkTask<V,Void> {
-        final IntConsumer action;
+        final LongConsumer action;
         ForEachKeyTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntConsumer action) {
+                 LongConsumer action) {
             super(p, b, i, f, t);
             this.action = action;
         }
         public final void compute() {
-            final IntConsumer action;
+            final LongConsumer action;
             if ((action = this.action) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
@@ -4929,15 +4869,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class ForEachMappingTask<V>
             extends BulkTask<V,Void> {
-        final IntBiConsumer<? super V> action;
+        final LongBiConsumer<? super V> action;
         ForEachMappingTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntBiConsumer<? super V> action) {
+                 LongBiConsumer<? super V> action) {
             super(p, b, i, f, t);
             this.action = action;
         }
         public final void compute() {
-            final IntBiConsumer<? super V> action;
+            final LongBiConsumer<? super V> action;
             if ((action = this.action) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
@@ -4956,16 +4896,16 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class ForEachTransformedKeyTask<V,U>
             extends BulkTask<V,Void> {
-        final IntFunction<? extends U> transformer;
+        final LongFunction<? extends U> transformer;
         final Consumer<? super U> action;
         ForEachTransformedKeyTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntFunction<? extends U> transformer, Consumer<? super U> action) {
+                 LongFunction<? extends U> transformer, Consumer<? super U> action) {
             super(p, b, i, f, t);
             this.transformer = transformer; this.action = action;
         }
         public final void compute() {
-            final IntFunction<? extends U> transformer;
+            final LongFunction<? extends U> transformer;
             final Consumer<? super U> action;
             if ((transformer = this.transformer) != null &&
                     (action = this.action) != null) {
@@ -5022,16 +4962,16 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class ForEachTransformedEntryTask<V,U>
             extends BulkTask<V,Void> {
-        final Function<IntMap.Entry<V>, ? extends U> transformer;
+        final Function<Entry<V>, ? extends U> transformer;
         final Consumer<? super U> action;
         ForEachTransformedEntryTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 Function<IntMap.Entry<V>, ? extends U> transformer, Consumer<? super U> action) {
+                 Function<Entry<V>, ? extends U> transformer, Consumer<? super U> action) {
             super(p, b, i, f, t);
             this.transformer = transformer; this.action = action;
         }
         public final void compute() {
-            final Function<IntMap.Entry<V>, ? extends U> transformer;
+            final Function<Entry<V>, ? extends U> transformer;
             final Consumer<? super U> action;
             if ((transformer = this.transformer) != null &&
                     (action = this.action) != null) {
@@ -5055,17 +4995,17 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class ForEachTransformedMappingTask<V,U>
             extends BulkTask<V,Void> {
-        final IntBiFunction<? super V, ? extends U> transformer;
+        final LongBiFunction<? super V, ? extends U> transformer;
         final Consumer<? super U> action;
         ForEachTransformedMappingTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntBiFunction<? super V, ? extends U> transformer,
+                 LongBiFunction<? super V, ? extends U> transformer,
                  Consumer<? super U> action) {
             super(p, b, i, f, t);
             this.transformer = transformer; this.action = action;
         }
         public final void compute() {
-            final IntBiFunction<? super V, ? extends U> transformer;
+            final LongBiFunction<? super V, ? extends U> transformer;
             final Consumer<? super U> action;
             if ((transformer = this.transformer) != null &&
                     (action = this.action) != null) {
@@ -5089,18 +5029,18 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class SearchKeysTask<V,U>
             extends BulkTask<V,U> {
-        final IntFunction<? extends U> searchFunction;
+        final LongFunction<? extends U> searchFunction;
         final AtomicReference<U> result;
         SearchKeysTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntFunction<? extends U> searchFunction,
+                 LongFunction<? extends U> searchFunction,
                  AtomicReference<U> result) {
             super(p, b, i, f, t);
             this.searchFunction = searchFunction; this.result = result;
         }
         public final U getRawResult() { return result.get(); }
         public final void compute() {
-            final IntFunction<? extends U> searchFunction;
+            final LongFunction<? extends U> searchFunction;
             final AtomicReference<U> result;
             if ((searchFunction = this.searchFunction) != null &&
                     (result = this.result) != null) {
@@ -5221,18 +5161,18 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class SearchMappingsTask<V,U>
             extends BulkTask<V,U> {
-        final IntBiFunction<? super V, ? extends U> searchFunction;
+        final LongBiFunction<? super V, ? extends U> searchFunction;
         final AtomicReference<U> result;
         SearchMappingsTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 IntBiFunction<? super V, ? extends U> searchFunction,
+                 LongBiFunction<? super V, ? extends U> searchFunction,
                  AtomicReference<U> result) {
             super(p, b, i, f, t);
             this.searchFunction = searchFunction; this.result = result;
         }
         public final U getRawResult() { return result.get(); }
         public final void compute() {
-            final IntBiFunction<? super V, ? extends U> searchFunction;
+            final LongBiFunction<? super V, ? extends U> searchFunction;
             final AtomicReference<U> result;
             if ((searchFunction = this.searchFunction) != null &&
                     (result = this.result) != null) {
@@ -5264,20 +5204,20 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
 
     @SuppressWarnings("serial")
     static final class ReduceKeysTask<V>
-            extends BulkTask<V,Integer> {
-        final IntToIntBiFunction reducer;
-        int result;
+            extends BulkTask<V,Long> {
+        final LongToLongBiFunction reducer;
+        long result;
         ReduceKeysTask<V> rights, nextRight;
         ReduceKeysTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  ReduceKeysTask<V> nextRight,
-                 IntToIntBiFunction reducer) {
+                 LongToLongBiFunction reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
         }
-        public final Integer getRawResult() { return result; }
+        public final Long getRawResult() { return result; }
         public final void compute() {
-            final IntToIntBiFunction reducer;
+            final LongToLongBiFunction reducer;
             if ((reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
@@ -5288,8 +5228,8 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                 }
                 int r = 0;
                 for (Node<V> p; (p = advance()) != null; ) {
-                    int u = p.key;
-                    r = reducer.applyAsInt(r, u);
+                    long u = p.key;
+                    r = reducer.applyAsLong(r, u);
                 }
                 result = r;
                 CountedCompleter<?> c;
@@ -5299,7 +5239,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             t = (ReduceKeysTask<V>)c,
                             s = t.rights;
                     while (s != null) {
-                        t.result = reducer.applyAsInt(t.result, s.result);
+                        t.result = reducer.applyAsLong(t.result, s.result);
                         s = t.rights = s.nextRight;
                     }
                 }
@@ -5357,20 +5297,20 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
 
     @SuppressWarnings("serial")
     static final class ReduceEntriesTask<V>
-            extends BulkTask<V,IntMap.Entry<V>> {
-        final BiFunction<IntMap.Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer;
-        IntMap.Entry<V> result;
+            extends BulkTask<V, Entry<V>> {
+        final BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer;
+        Entry<V> result;
         ReduceEntriesTask<V> rights, nextRight;
         ReduceEntriesTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  ReduceEntriesTask<V> nextRight,
-                 BiFunction<Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer) {
+                 BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
         }
-        public final IntMap.Entry<V> getRawResult() { return result; }
+        public final Entry<V> getRawResult() { return result; }
         public final void compute() {
-            final BiFunction<IntMap.Entry<V>, IntMap.Entry<V>, ? extends IntMap.Entry<V>> reducer;
+            final BiFunction<Entry<V>, Entry<V>, ? extends Entry<V>> reducer;
             if ((reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
@@ -5379,7 +5319,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
-                IntMap.Entry<V> r = null;
+                Entry<V> r = null;
                 for (Node<V> p; (p = advance()) != null; )
                     r = (r == null) ? p : reducer.apply(r, p);
                 result = r;
@@ -5390,7 +5330,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                             t = (ReduceEntriesTask<V>)c,
                             s = t.rights;
                     while (s != null) {
-                        IntMap.Entry<V> tr, sr;
+                        Entry<V> tr, sr;
                         if ((sr = s.result) != null)
                             t.result = (((tr = t.result) == null) ? sr :
                                     reducer.apply(tr, sr));
@@ -5404,14 +5344,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceKeysTask<V,U>
             extends BulkTask<V,U> {
-        final IntFunction<? extends U> transformer;
+        final LongFunction<? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
         MapReduceKeysTask<V,U> rights, nextRight;
         MapReduceKeysTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceKeysTask<V,U> nextRight,
-                 IntFunction<? extends U> transformer,
+                 LongFunction<? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5419,7 +5359,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final IntFunction<? extends U> transformer;
+            final LongFunction<? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5512,14 +5452,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesTask<V,U>
             extends BulkTask<V,U> {
-        final Function<IntMap.Entry<V>, ? extends U> transformer;
+        final Function<Entry<V>, ? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
         MapReduceEntriesTask<V,U> rights, nextRight;
         MapReduceEntriesTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesTask<V,U> nextRight,
-                 Function<IntMap.Entry<V>, ? extends U> transformer,
+                 Function<Entry<V>, ? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5527,7 +5467,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final Function<IntMap.Entry<V>, ? extends U> transformer;
+            final Function<Entry<V>, ? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5566,14 +5506,14 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceMappingsTask<V,U>
             extends BulkTask<V,U> {
-        final IntBiFunction<? super V, ? extends U> transformer;
+        final LongBiFunction<? super V, ? extends U> transformer;
         final BiFunction<? super U, ? super U, ? extends U> reducer;
         U result;
         MapReduceMappingsTask<V,U> rights, nextRight;
         MapReduceMappingsTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceMappingsTask<V,U> nextRight,
-                 IntBiFunction<? super V, ? extends U> transformer,
+                 LongBiFunction<? super V, ? extends U> transformer,
                  BiFunction<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5581,7 +5521,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final IntBiFunction<? super V, ? extends U> transformer;
+            final LongBiFunction<? super V, ? extends U> transformer;
             final BiFunction<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5620,7 +5560,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceKeysToDoubleTask<V>
             extends BulkTask<V,Double> {
-        final ToDoubleIntFunction transformer;
+        final ToDoubleLongFunction transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
@@ -5628,7 +5568,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceKeysToDoubleTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceKeysToDoubleTask<V> nextRight,
-                 ToDoubleIntFunction transformer,
+                 ToDoubleLongFunction transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5637,7 +5577,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleIntFunction transformer;
+            final ToDoubleLongFunction transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5720,7 +5660,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToDoubleTask<V>
             extends BulkTask<V,Double> {
-        final ToDoubleFunction<IntMap.Entry<V>> transformer;
+        final ToDoubleFunction<Entry<V>> transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
@@ -5728,7 +5668,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceEntriesToDoubleTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesToDoubleTask<V> nextRight,
-                 ToDoubleFunction<IntMap.Entry<V>> transformer,
+                 ToDoubleFunction<Entry<V>> transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5737,7 +5677,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleFunction<IntMap.Entry<V>> transformer;
+            final ToDoubleFunction<Entry<V>> transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5770,7 +5710,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceMappingsToDoubleTask<V>
             extends BulkTask<V,Double> {
-        final ToDoubleIntBiFunction<? super V> transformer;
+        final ToDoubleLongBiFunction<? super V> transformer;
         final DoubleBinaryOperator reducer;
         final double basis;
         double result;
@@ -5778,7 +5718,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceMappingsToDoubleTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceMappingsToDoubleTask<V> nextRight,
-                 ToDoubleIntBiFunction<? super V> transformer,
+                 ToDoubleLongBiFunction<? super V> transformer,
                  double basis,
                  DoubleBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5787,7 +5727,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ToDoubleIntBiFunction<? super V> transformer;
+            final ToDoubleLongBiFunction<? super V> transformer;
             final DoubleBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5820,7 +5760,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceKeysToLongTask<V>
             extends BulkTask<V,Long> {
-        final ToLongIntFunction transformer;
+        final LongToLongFunction transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
@@ -5828,7 +5768,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceKeysToLongTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceKeysToLongTask<V> nextRight,
-                 ToLongIntFunction transformer,
+                 LongToLongFunction transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5837,7 +5777,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongIntFunction transformer;
+            final LongToLongFunction transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5920,7 +5860,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToLongTask<V>
             extends BulkTask<V,Long> {
-        final ToLongFunction<IntMap.Entry<V>> transformer;
+        final ToLongFunction<Entry<V>> transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
@@ -5928,7 +5868,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceEntriesToLongTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesToLongTask<V> nextRight,
-                 ToLongFunction<IntMap.Entry<V>> transformer,
+                 ToLongFunction<Entry<V>> transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5937,7 +5877,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongFunction<IntMap.Entry<V>> transformer;
+            final ToLongFunction<Entry<V>> transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5970,7 +5910,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceMappingsToLongTask<V>
             extends BulkTask<V,Long> {
-        final ToLongIntBiFunction<? super V> transformer;
+        final ToLongLongBiFunction<? super V> transformer;
         final LongBinaryOperator reducer;
         final long basis;
         long result;
@@ -5978,7 +5918,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceMappingsToLongTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceMappingsToLongTask<V> nextRight,
-                 ToLongIntBiFunction<? super V> transformer,
+                 ToLongLongBiFunction<? super V> transformer,
                  long basis,
                  LongBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5987,7 +5927,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ToLongIntBiFunction<? super V> transformer;
+            final ToLongLongBiFunction<? super V> transformer;
             final LongBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6017,55 +5957,6 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
     }
 
-    @SuppressWarnings("serial")
-    static final class MapReduceKeysToIntTask<V>
-            extends BulkTask<V,Integer> {
-        final ToIntIntFunction transformer;
-        final IntBinaryOperator reducer;
-        final int basis;
-        int result;
-        MapReduceKeysToIntTask<V> rights, nextRight;
-        MapReduceKeysToIntTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceKeysToIntTask<V> nextRight,
-                 ToIntIntFunction transformer,
-                 int basis,
-                 IntBinaryOperator reducer) {
-            super(p, b, i, f, t); this.nextRight = nextRight;
-            this.transformer = transformer;
-            this.basis = basis; this.reducer = reducer;
-        }
-        public final Integer getRawResult() { return result; }
-        public final void compute() {
-            final ToIntIntFunction transformer;
-            final IntBinaryOperator reducer;
-            if ((transformer = this.transformer) != null &&
-                    (reducer = this.reducer) != null) {
-                int r = this.basis;
-                for (int i = baseIndex, f, h; batch > 0 &&
-                        (h = ((f = baseLimit) + i) >>> 1) > i;) {
-                    addToPendingCount(1);
-                    (rights = new MapReduceKeysToIntTask<V>
-                            (this, batch >>>= 1, baseLimit = h, f, tab,
-                                    rights, transformer, r, reducer)).fork();
-                }
-                for (Node<V> p; (p = advance()) != null; )
-                    r = reducer.applyAsInt(r, transformer.applyAsInt(p.key));
-                result = r;
-                CountedCompleter<?> c;
-                for (c = firstComplete(); c != null; c = c.nextComplete()) {
-                    @SuppressWarnings("unchecked")
-                    MapReduceKeysToIntTask<V>
-                            t = (MapReduceKeysToIntTask<V>)c,
-                            s = t.rights;
-                    while (s != null) {
-                        t.result = reducer.applyAsInt(t.result, s.result);
-                        s = t.rights = s.nextRight;
-                    }
-                }
-            }
-        }
-    }
 
     @SuppressWarnings("serial")
     static final class MapReduceValuesToIntTask<V>
@@ -6120,7 +6011,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToIntTask<V>
             extends BulkTask<V,Integer> {
-        final ToIntFunction<IntMap.Entry<V>> transformer;
+        final ToIntFunction<Entry<V>> transformer;
         final IntBinaryOperator reducer;
         final int basis;
         int result;
@@ -6128,7 +6019,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         MapReduceEntriesToIntTask
                 (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
                  MapReduceEntriesToIntTask<V> nextRight,
-                 ToIntFunction<IntMap.Entry<V>> transformer,
+                 ToIntFunction<Entry<V>> transformer,
                  int basis,
                  IntBinaryOperator reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -6137,7 +6028,7 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
         }
         public final Integer getRawResult() { return result; }
         public final void compute() {
-            final ToIntFunction<IntMap.Entry<V>> transformer;
+            final ToIntFunction<Entry<V>> transformer;
             final IntBinaryOperator reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -6157,56 +6048,6 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
                     @SuppressWarnings("unchecked")
                     MapReduceEntriesToIntTask<V>
                             t = (MapReduceEntriesToIntTask<V>)c,
-                            s = t.rights;
-                    while (s != null) {
-                        t.result = reducer.applyAsInt(t.result, s.result);
-                        s = t.rights = s.nextRight;
-                    }
-                }
-            }
-        }
-    }
-
-    @SuppressWarnings("serial")
-    static final class MapReduceMappingsToIntTask<V>
-            extends BulkTask<V,Integer> {
-        final ToIntIntBiFunction<? super V> transformer;
-        final IntBinaryOperator reducer;
-        final int basis;
-        int result;
-        MapReduceMappingsToIntTask<V> rights, nextRight;
-        MapReduceMappingsToIntTask
-                (BulkTask<V,?> p, int b, int i, int f, Node<V>[] t,
-                 MapReduceMappingsToIntTask<V> nextRight,
-                 ToIntIntBiFunction<? super V> transformer,
-                 int basis,
-                 IntBinaryOperator reducer) {
-            super(p, b, i, f, t); this.nextRight = nextRight;
-            this.transformer = transformer;
-            this.basis = basis; this.reducer = reducer;
-        }
-        public final Integer getRawResult() { return result; }
-        public final void compute() {
-            final ToIntIntBiFunction<? super V> transformer;
-            final IntBinaryOperator reducer;
-            if ((transformer = this.transformer) != null &&
-                    (reducer = this.reducer) != null) {
-                int r = this.basis;
-                for (int i = baseIndex, f, h; batch > 0 &&
-                        (h = ((f = baseLimit) + i) >>> 1) > i;) {
-                    addToPendingCount(1);
-                    (rights = new MapReduceMappingsToIntTask<V>
-                            (this, batch >>>= 1, baseLimit = h, f, tab,
-                                    rights, transformer, r, reducer)).fork();
-                }
-                for (Node<V> p; (p = advance()) != null; )
-                    r = reducer.applyAsInt(r, transformer.applyAsInt(p.key, p.val));
-                result = r;
-                CountedCompleter<?> c;
-                for (c = firstComplete(); c != null; c = c.nextComplete()) {
-                    @SuppressWarnings("unchecked")
-                    MapReduceMappingsToIntTask<V>
-                            t = (MapReduceMappingsToIntTask<V>)c,
                             s = t.rights;
                     while (s != null) {
                         t.result = reducer.applyAsInt(t.result, s.result);

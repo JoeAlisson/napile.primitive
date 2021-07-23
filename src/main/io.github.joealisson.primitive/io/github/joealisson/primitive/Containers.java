@@ -308,6 +308,7 @@ public class Containers
     public static abstract class AbstractImmutableIntCollection extends AbstractIntCollection {
         @Override public boolean add(int e) { throw  new UnsupportedOperationException(); }
         @Override public boolean addAll(IntCollection c) { throw new UnsupportedOperationException(); }
+        @Override public boolean addAll(int[] array) { throw new UnsupportedOperationException(); }
         @Override public void    clear() { throw new UnsupportedOperationException(); }
         @Override public boolean remove(int o) { throw new UnsupportedOperationException(); }
         @Override public boolean removeAll(IntCollection c) { throw new UnsupportedOperationException(); }

@@ -243,6 +243,14 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
         return modified;
     }
 
+    public boolean addAll(int index, int[] array) {
+        rangeCheckForAdd(index);
+        for (int v : array) {
+            add(index++, v);
+        }
+        return array.length > 0;
+    }
+
 
     // Iterators
 
@@ -789,6 +797,21 @@ public abstract class AbstractIntList extends AbstractIntCollection implements I
             checkForComodification();
             root.addAll(offset + index, c);
             updateSizeAndModCount(cSize);
+            return true;
+        }
+
+        public boolean addAll(int[] array) {
+            return addAll(size, array);
+        }
+
+        public boolean addAll(int index, int[] array) {
+            rangeCheckForAdd(index);
+            if(array.length == 0) {
+                return false;
+            }
+            checkForComodification();
+            root.addAll(index + offset, array);
+            updateSizeAndModCount(array.length);
             return true;
         }
 

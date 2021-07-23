@@ -329,6 +329,13 @@ public abstract class AbstractIntCollection implements IntCollection {
         return modified;
     }
 
+    public boolean addAll(int[] array) {
+        for (int v : array) {
+            add(v);
+        }
+        return array.length > 0;
+    }
+
     /**
      * {@inheritDoc}
      *
