@@ -16,19 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package io.github.joealisson.primitive.maps.abstracts;
+package io.github.joealisson.primitive;
 
 import java.util.Iterator;
 import java.util.PrimitiveIterator;
 import java.util.Set;
 
 import io.github.joealisson.primitive.pair.IntLong;
-import io.github.joealisson.primitive.Constants;
-import io.github.joealisson.primitive.LongCollection;
-import io.github.joealisson.primitive.AbstractLongCollection;
-import io.github.joealisson.primitive.iterators.LongIterator;
-import io.github.joealisson.primitive.maps.IntLongMap;
-import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 /**

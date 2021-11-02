@@ -19,12 +19,12 @@
 package io.github.joealisson.primitive;
 
 import io.github.joealisson.primitive.function.IntBiFunction;
+import io.github.joealisson.primitive.function.LongToLongBiFunction;
+import io.github.joealisson.primitive.function.ToLongObjLongBiFunction;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.lists.LongList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractLongList;
-import io.github.joealisson.primitive.maps.IntLongMap;
-import io.github.joealisson.primitive.maps.LongObjectMap;
-import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
+import io.github.joealisson.primitive.pair.IntInt;
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
@@ -33,6 +33,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
+import java.util.function.ToLongFunction;
 
 /**
  * @author VISTALL
@@ -55,10 +56,14 @@ public class Containers
     //
     @SuppressWarnings("rawtypes")
     private static final IntMap EMPTY_INT_MAP = new EmptyIntMap();
+    private static final IntIntMap EMPTY_INT_INT_MAP = new EmptyIntIntMap();
     public static final IntLongMap EMPTY_INT_LONG_MAP = new EmptyIntLongMap();
+    public static final MapToLong<?> EMPTY_MAP_TO_LONG = new EmptyMapToLong<>();
 
     @SuppressWarnings("rawtypes")
     private static final LongMap EMPTY_LONG_OBJECT_MAP = new EmptyLongMap();
+
+    static final int EXPAND_FACTOR = 2;
 
 
     /**
@@ -70,6 +75,10 @@ public class Containers
     @SuppressWarnings("unchecked")
     public static <V> IntMap<V> emptyIntMap() {
         return EMPTY_INT_MAP;
+    }
+
+    public static IntIntMap emptyIntIntMap() {
+        return EMPTY_INT_INT_MAP;
     }
 
     @SuppressWarnings("unchecked")
@@ -565,7 +574,7 @@ public class Containers
         @Override
         public boolean equals(Object o)
         {
-            return (o instanceof LongObjectMap) && ((LongObjectMap) o).size() == 0;
+            return (o instanceof LongMap) && ((LongMap) o).size() == 0;
         }
 
         @Override
@@ -581,8 +590,77 @@ public class Containers
         }
     }
 
-    private static class EmptyIntLongMap extends AbstractIntLongMap implements Serializable
-    {
+    private static class EmptyIntIntMap extends AbstractIntIntMap implements  Serializable {
+        public static final long serialVersionUID = 2323155007002525853L;
+
+        @Override
+        public int size()
+        {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean containsKey(int key)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean containsValue(int value)
+        {
+            return false;
+        }
+
+        @Override
+        public int get(int key)
+        {
+            return Constants.DEFAULT_INT_VALUE;
+        }
+
+        @Override
+        public IntSet keySet()
+        {
+            return EMPTY_INT_SET;
+        }
+
+        @Override
+        public IntCollection values()
+        {
+            return EMPTY_INT_LIST;
+        }
+
+        @Override
+        public Set<Entry> entrySet()
+        {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            return (o instanceof IntIntMap) && ((IntIntMap) o).size() == 0;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+
+        // Preserves singleton property
+        private Object readResolve()
+        {
+            return EMPTY_INT_INT_MAP;
+        }
+    }
+
+    private static class EmptyIntLongMap extends AbstractIntLongMap implements Serializable {
 
         public static final long serialVersionUID = 2323155007002525853L;
 
@@ -649,7 +727,125 @@ public class Containers
         // Preserves singleton property
         private Object readResolve()
         {
-            return EMPTY_INT_MAP;
+            return EMPTY_INT_LONG_MAP;
+        }
+    }
+
+    private static class EmptyMapToLong<K> extends AbstractMapToLong<K> implements Serializable
+    {
+
+        public static final long serialVersionUID = 2323155007002525853L;
+
+        @Override
+        public int size()
+        {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean containsKey(Object key)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean containsValue(long value)
+        {
+            return false;
+        }
+
+        @Override
+        public long get(Object key)
+        {
+            return Constants.DEFAULT_LONG_VALUE;
+        }
+
+        @Override
+        public Set<K> keySet()
+        {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public LongCollection values()
+        {
+            return EMPTY_LONG_LIST;
+        }
+
+        @Override
+        public Set<Entry<K>> entrySet()
+        {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            return (o instanceof MapToLong) && ((MapToLong) o).size() == 0;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+
+        // Preserves singleton property
+        private Object readResolve()
+        {
+            return EMPTY_MAP_TO_LONG;
+        }
+    }
+
+    public static abstract class ImmutabbleMapToLong<K> extends AbstractMapToLong<K> implements Serializable{
+        @Override public void clear() { throw new UnsupportedOperationException(); }
+        @Override public long compute(K key, ToLongObjLongBiFunction<? super K> remappingFunction) { throw new UnsupportedOperationException(); }
+        @Override public long computeIfAbsent(K key, ToLongFunction<? super K> mappingFunction) { throw new UnsupportedOperationException(); }
+        @Override public long computeIfPresent(K key, ToLongObjLongBiFunction<? super K> remappingFunction) { throw new UnsupportedOperationException(); }
+        @Override public long merge(K key, long value, LongToLongBiFunction remappingFunction) { throw new UnsupportedOperationException(); }
+        @Override public long put(K key, long value) { throw new UnsupportedOperationException(); }
+        @Override public void putAll(MapToLong<? extends K> m) { throw new UnsupportedOperationException(); }
+        @Override public long putIfAbsent(K key, long value) { throw new UnsupportedOperationException(); }
+        @Override public long remove(K key) { throw new UnsupportedOperationException(); }
+        @Override public boolean remove(K key, long value) { throw new UnsupportedOperationException(); }
+        @Override public long replace(K key, long value) { throw new UnsupportedOperationException(); }
+        @Override public boolean replace(K key, long oldValue, long newValue) { throw new UnsupportedOperationException(); }
+        @Override public void replaceAll(ToLongObjLongBiFunction<? super K> function) { throw new UnsupportedOperationException(); }
+    }
+
+    public static class MapToLong1<K> extends ImmutabbleMapToLong<K> {
+        private final K k0;
+        private final long v0;
+
+        MapToLong1(K k0, long v0) {
+            this.k0 = Objects.requireNonNull(k0);
+            this.v0 = v0;
+        }
+
+        @Override
+        public Set<MapToLong.Entry<K>> entrySet() {
+            return Set.of(MapToLong.entry(k0, v0));
+        }
+
+        @Override
+        public boolean containsKey(Object o) {
+            return o == k0; // implicit nullcheck of o
+        }
+
+        @Override
+        public boolean containsValue(long o) {
+            return o == v0;
+        }
+
+        @Override
+        public int hashCode() {
+            return k0.hashCode() ^ Long.hashCode(v0);
         }
     }
 

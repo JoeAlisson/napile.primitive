@@ -11,13 +11,14 @@ import java.util.function.Function;
  * @see Function
  */
 @FunctionalInterface
-public interface ToLongLongFunction {
+public interface ToLongObjLongBiFunction<K> {
 
     /**
-     * Applies this function to the given argument.
+     * Applies this function to the given arguments.
      *
-     * @param value the function argument
+     * @param k the first function argument
+     * @param t the second function argument
      * @return the function result
      */
-    long applyAsLong(long value);
+    long applyAsLong(K k, long t);
 }

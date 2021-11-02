@@ -23,5 +23,5 @@ public interface LongToLongBiFunction {
      * @param u the second function argument
      * @return the function result
      */
-    int applyAsLong(long t, long u);
+    long applyAsLong(long t, long u);
 }

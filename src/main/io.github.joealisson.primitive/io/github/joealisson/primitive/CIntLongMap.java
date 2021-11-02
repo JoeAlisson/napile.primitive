@@ -16,7 +16,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package io.github.joealisson.primitive.maps;
+package io.github.joealisson.primitive;
+
+import io.github.joealisson.primitive.IntLongMap;
 
 /**
  * <p>

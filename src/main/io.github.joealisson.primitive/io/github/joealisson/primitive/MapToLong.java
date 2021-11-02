@@ -1,38 +1,14 @@
-/*
- * Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
 package io.github.joealisson.primitive;
 
 import io.github.joealisson.primitive.comparators.LongComparator;
-import io.github.joealisson.primitive.function.LongBiConsumer;
-import io.github.joealisson.primitive.function.LongBiFunction;
+import io.github.joealisson.primitive.function.LongToLongBiFunction;
+import io.github.joealisson.primitive.function.ToLongObjLongBiFunction;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.LongFunction;
+import java.util.function.ObjLongConsumer;
+import java.util.function.ToLongFunction;
+
 
 /**
  * An object that maps keys to values.  A map cannot contain duplicate keys;
@@ -72,7 +48,7 @@ import java.util.function.LongFunction;
  * {@code UnsupportedOperationException} if this map does not support the
  * operation.  If this is the case, these methods may, but are not required
  * to, throw an {@code UnsupportedOperationException} if the invocation would
- * have no effect on the map.  For example, invoking the {@link #putAll(LongMap)}
+ * have no effect on the map.  For example, invoking the {@link #putAll(MapToLong)}
  * method on an unmodifiable map may, but is not required to, throw the
  * exception if the map whose mappings are to be "superimposed" is empty.
  *
@@ -92,7 +68,7 @@ import java.util.function.LongFunction;
  *
  * <p>Many methods in Collections Framework interfaces are defined
  * in terms of the {@link Object#equals(Object) equals} method.  For
- * example, the specification for the {@link #containsKey(long)
+ * example, the specification for the {@link #containsKey(Object)
  * containsKey(Object key)} method says: "returns {@code true} if and
  * only if this map contains a mapping for a key {@code k} such that
  * {@code (key==null ? k==null : key.equals(k))}." This specification should
@@ -115,9 +91,9 @@ import java.util.function.LongFunction;
  * most current implementations do not do so.
  *
  * <h2><a id="unmodifiable">Unmodifiable Maps</a></h2>
- * <p>The {@link Map#of() Map.of},
- * {@link Map#ofEntries(Map.Entry...) Map.ofEntries}, and
- * {@link Map#copyOf Map.copyOf}
+ * <p>The {@link java.util.Map#of() Map.of},
+ * {@link java.util.Map#ofEntries(java.util.Map.Entry...) Map.ofEntries}, and
+ * {@link java.util.Map#copyOf Map.copyOf}
  * static factory methods provide a convenient way to create unmodifiable maps.
  * The {@code Map}
  * instances created by these methods have the following characteristics:
@@ -148,7 +124,7 @@ import java.util.function.LongFunction;
  * <a href="{@docRoot}/java.base/java/util/package-summary.html#CollectionsFramework">
  * Java Collections Framework</a>.
  *
- * @param <V> the type of mapped values
+ * @param <K> the type of keys maintained by this map
  *
  * @author  Josh Bloch
  * @see HashMap
@@ -159,8 +135,7 @@ import java.util.function.LongFunction;
  * @see Set
  * @since 1.2
  */
-public interface LongMap<V> {
-    // Query Operations
+public interface MapToLong<K>  {
 
     /**
      * Returns the number of key-value mappings in this map.  If the
@@ -195,7 +170,7 @@ public interface LongMap<V> {
      *         does not permit null keys
      * (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    boolean containsKey(long key);
+    boolean containsKey(Object key);
 
     /**
      * Returns {@code true} if this map maps one or more keys to the
@@ -215,7 +190,7 @@ public interface LongMap<V> {
      *         map does not permit null values
      * (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    boolean containsValue(Object value);
+    boolean containsValue(long value);
 
     /**
      * Returns the value to which the specified key is mapped,
@@ -243,7 +218,7 @@ public interface LongMap<V> {
      *         does not permit null keys
      * (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    V get(long key);
+    long get(K key);
 
     // Modification Operations
 
@@ -252,7 +227,7 @@ public interface LongMap<V> {
      * (optional operation).  If the map previously contained a mapping for
      * the key, the old value is replaced by the specified value.  (A map
      * {@code m} is said to contain a mapping for a key {@code k} if and only
-     * if {@link #containsKey(long) m.containsKey(k)} would return
+     * if {@link #containsKey(Object) m.containsKey(k)} would return
      * {@code true}.)
      *
      * @param key key with which the specified value is to be associated
@@ -271,7 +246,7 @@ public interface LongMap<V> {
      * @throws IllegalArgumentException if some property of the specified key
      *         or value prevents it from being stored in this map
      */
-    V put(long key, V value);
+    long put(K key, long value);
 
     /**
      * Removes the mapping for a key from this map if it is present
@@ -303,7 +278,7 @@ public interface LongMap<V> {
      *         map does not permit null keys
      * (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    V remove(long key);
+    long remove(K key);
 
 
     // Bulk Operations
@@ -311,7 +286,7 @@ public interface LongMap<V> {
     /**
      * Copies all of the mappings from the specified map to this map
      * (optional operation).  The effect of this call is equivalent to that
-     * of calling {@link #put(long,Object) put(k, v)} on this map once
+     * of calling {@link #put(K,long) put(k, v)} on this map once
      * for each mapping from key {@code k} to value {@code v} in the
      * specified map.  The behavior of this operation is undefined if the
      * specified map is modified while the operation is in progress.
@@ -327,7 +302,7 @@ public interface LongMap<V> {
      * @throws IllegalArgumentException if some property of a key or value in
      *         the specified map prevents it from being stored in this map
      */
-    void putAll(LongMap<? extends V> m);
+    void putAll(MapToLong<? extends K> m);
 
     /**
      * Removes all of the mappings from this map (optional operation).
@@ -356,7 +331,7 @@ public interface LongMap<V> {
      *
      * @return a set view of the keys contained in this map
      */
-    LongSet keySet();
+    Set<K> keySet();
 
     /**
      * Returns a {@link Collection} view of the values contained in this map.
@@ -373,7 +348,7 @@ public interface LongMap<V> {
      *
      * @return a collection view of the values contained in this map
      */
-    Collection<V> values();
+    LongCollection values();
 
     /**
      * Returns a {@link Set} view of the mappings contained in this map.
@@ -391,7 +366,7 @@ public interface LongMap<V> {
      *
      * @return a set view of the mappings contained in this map
      */
-    Set<Entry<V>> entrySet();
+    Set<Entry<K>> entrySet();
 
     /**
      * A map entry (key-value pair).  The {@code Map.entrySet} method returns
@@ -403,10 +378,10 @@ public interface LongMap<V> {
      * modified after the entry was returned by the iterator, except through
      * the {@code setValue} operation on the map entry.
      *
-     * @see Map#entrySet()
+     * @see java.util.Map#entrySet()
      * @since 1.2
      */
-    interface Entry<V> {
+    interface Entry<K> {
         /**
          * Returns the key corresponding to this entry.
          *
@@ -415,7 +390,7 @@ public interface LongMap<V> {
          *         required to, throw this exception if the entry has been
          *         removed from the backing map.
          */
-        long getKey();
+        K getKey();
 
         /**
          * Returns the value corresponding to this entry.  If the mapping
@@ -427,7 +402,7 @@ public interface LongMap<V> {
          *         required to, throw this exception if the entry has been
          *         removed from the backing map.
          */
-        V getValue();
+        long getValue();
 
         /**
          * Replaces the value corresponding to this entry with the specified
@@ -449,7 +424,7 @@ public interface LongMap<V> {
          *         required to, throw this exception if the entry has been
          *         removed from the backing map.
          */
-        V setValue(V value);
+        long setValue(long value);
 
         /**
          * Compares the specified object with this entry for equality.
@@ -490,71 +465,69 @@ public interface LongMap<V> {
         int hashCode();
 
         /**
-         * Returns a comparator that compares {@link Map.Entry} in natural order on key.
+         * Returns a comparator that compares {@link java.util.Map.Entry} in natural order on key.
          *
          * <p>The returned comparator is serializable and throws {@link
          * NullPointerException} when comparing an entry with a null key.
          *
-         * @param  <V> the type of the map values
-         * @return a comparator that compares {@link Map.Entry} in natural order on key.
+         * @param  <K> the {@link Comparable} type of then map keys
+         * @return a comparator that compares {@link java.util.Map.Entry} in natural order on key.
          * @see Comparable
          * @since 1.8
          */
-        public static <V> Comparator<Entry<V>> comparingByKey() {
-            return (Comparator<Entry<V>> & Serializable)
-                    (c1, c2) -> Long.compare(c1.getKey(), c2.getKey());
+        public static <K extends Comparable<? super K>> Comparator<Entry<K>> comparingByKey() {
+            return (Comparator<Entry<K>> & Serializable)
+                    (c1, c2) -> c1.getKey().compareTo(c2.getKey());
         }
 
         /**
-         * Returns a comparator that compares {@link Map.Entry} in natural order on value.
+         * Returns a comparator that compares {@link java.util.Map.Entry} in natural order on value.
          *
          * <p>The returned comparator is serializable and throws {@link
          * NullPointerException} when comparing an entry with null values.
          *
-         * @param <V> the {@link Comparable} type of the map values
-         * @return a comparator that compares {@link Map.Entry} in natural order on value.
+         * @return a comparator that compares {@link java.util.Map.Entry} in natural order on value.
          * @see Comparable
          * @since 1.8
          */
-        public static <V extends Comparable<? super V>> Comparator<Entry<V>> comparingByValue() {
-            return (Comparator<Entry<V>> & Serializable)
-                    (c1, c2) -> c1.getValue().compareTo(c2.getValue());
+        public static LongComparator comparingByValue() {
+            return (LongComparator & Serializable)  Long::compare;
         }
 
         /**
-         * Returns a comparator that compares {@link Map.Entry} by key using the given
+         * Returns a comparator that compares {@link java.util.Map.Entry} by key using the given
          * {@link Comparator}.
          *
          * <p>The returned comparator is serializable if the specified comparator
          * is also serializable.
          *
-         * @param  <V> the type of the map values
+         * @param  <K> the type of the map keys
          * @param  cmp the key {@link Comparator}
-         * @return a comparator that compares {@link Map.Entry} by the key.
+         * @return a comparator that compares {@link java.util.Map.Entry} by the key.
          * @since 1.8
          */
-        public static <V> Comparator<Entry<V>> comparingByKey(LongComparator cmp) {
+        public static <K> Comparator<Entry<K>> comparingByKey(Comparator<? super K> cmp) {
             Objects.requireNonNull(cmp);
-            return (Comparator<Entry<V>> & Serializable)
-                    (c1, c2) -> (int) cmp.compare(c1.getKey(), c2.getKey());
+            return (Comparator<Entry<K>> & Serializable)
+                    (c1, c2) -> cmp.compare(c1.getKey(), c2.getKey());
         }
 
         /**
-         * Returns a comparator that compares {@link Map.Entry} by value using the given
+         * Returns a comparator that compares {@link java.util.Map.Entry} by value using the given
          * {@link Comparator}.
          *
          * <p>The returned comparator is serializable if the specified comparator
          * is also serializable.
          *
-         * @param  <V> the type of the map values
+         * @param  <K> the type of the map keys
          * @param  cmp the value {@link Comparator}
-         * @return a comparator that compares {@link Map.Entry} by the value.
+         * @return a comparator that compares {@link java.util.Map.Entry} by the value.
          * @since 1.8
          */
-        public static <V> Comparator<Entry<V>> comparingByValue(Comparator<? super V> cmp) {
+        public static <K> Comparator<Entry<K>> comparingByValue(LongComparator cmp) {
             Objects.requireNonNull(cmp);
-            return (Comparator<Entry<V>> & Serializable)
-                    (c1, c2) -> cmp.compare(c1.getValue(), c2.getValue());
+            return (Comparator<Entry<K>> & Serializable)
+                    (c1, c2) -> (int) cmp.compare(c1.getValue(), c2.getValue());
         }
     }
 
@@ -583,7 +556,7 @@ public interface LongMap<V> {
      * {@link Object#hashCode}.
      *
      * @return the hash code value for this map
-     * @see Map.Entry#hashCode()
+     * @see java.util.Map.Entry#hashCode()
      * @see Object#equals(Object)
      * @see #equals(Object)
      */
@@ -595,7 +568,7 @@ public interface LongMap<V> {
      * Returns the value to which the specified key is mapped, or
      * {@code defaultValue} if this map contains no mapping for the key.
      *
-     *
+     * @implSpec
      * The default implementation makes no guarantees about synchronization
      * or atomicity properties of this method. Any implementation providing
      * atomicity guarantees must override this method and document its
@@ -613,9 +586,11 @@ public interface LongMap<V> {
      * (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default V getOrDefault(long key, V defaultValue) {
-        V v;
-        return (((v = get(key)) != null) || containsKey(key)) ? v : defaultValue;
+    default long getOrDefault(K key, long defaultValue) {
+        long v;
+        return (((v = get(key)) != Constants.DEFAULT_LONG_VALUE) || containsKey(key))
+                ? v
+                : defaultValue;
     }
 
     /**
@@ -625,7 +600,7 @@ public interface LongMap<V> {
      * the order of entry set iteration (if an iteration order is specified.)
      * Exceptions thrown by the action are relayed to the caller.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to, for this {@code map}:
      * <pre> {@code
      * for (Map.Entry<K, V> entry : map.entrySet())
@@ -643,11 +618,11 @@ public interface LongMap<V> {
      * removed during iteration
      * @since 1.8
      */
-    default void forEach(LongBiConsumer<? super V> action) {
+    default void forEach(ObjLongConsumer<? super K> action) {
         Objects.requireNonNull(action);
-        for (Entry<V> entry : entrySet()) {
-            long k;
-            V v;
+        for (Entry<K> entry : entrySet()) {
+            K k;
+            long v;
             try {
                 k = entry.getKey();
                 v = entry.getValue();
@@ -665,11 +640,11 @@ public interface LongMap<V> {
      * function throws an exception.  Exceptions thrown by the function are
      * relayed to the caller.
      *
-     *
+     * @implSpec
      * <p>The default implementation is equivalent to, for this {@code map}:
      * <pre> {@code
      * for (Map.Entry<K, V> entry : map.entrySet())
-     *     entry.setValue(function.applyAsInt(entry.getKey(), entry.getValue()));
+     *     entry.setValue(function.apply(entry.getKey(), entry.getValue()));
      * }</pre>
      *
      * <p>The default implementation makes no guarantees about synchronization
@@ -677,7 +652,7 @@ public interface LongMap<V> {
      * atomicity guarantees must override this method and document its
      * concurrency properties.
      *
-     * @param function the function to applyAsInt to each entry
+     * @param function the function to apply to each entry
      * @throws UnsupportedOperationException if the {@code set} operation
      * is not supported by this map's entry set iterator.
      * @throws ClassCastException if the class of a replacement value
@@ -698,11 +673,11 @@ public interface LongMap<V> {
      * removed during iteration
      * @since 1.8
      */
-    default void replaceAll(LongBiFunction<? super V, ? extends V> function) {
+    default void replaceAll(ToLongObjLongBiFunction<? super K> function) {
         Objects.requireNonNull(function);
-        for (Entry<V> entry : entrySet()) {
-            long k;
-            V v;
+        for (Entry<K> entry : entrySet()) {
+            K k;
+            long v;
             try {
                 k = entry.getKey();
                 v = entry.getValue();
@@ -712,7 +687,7 @@ public interface LongMap<V> {
             }
 
             // ise thrown from function is not a cme.
-            v = function.apply(k, v);
+            v = function.applyAsLong(k, v);
 
             try {
                 entry.setValue(v);
@@ -728,9 +703,8 @@ public interface LongMap<V> {
      * to {@code null}) associates it with the given value and returns
      * {@code null}, else returns the current value.
      *
-     *
-     * The default implementation is equivalent to, for this {@code
-     * map}:
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code map}:
      *
      * <pre> {@code
      * V v = map.get(key);
@@ -766,9 +740,9 @@ public interface LongMap<V> {
      *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default V putIfAbsent(long key, V value) {
-        V v = get(key);
-        if (v == null) {
+    default long putIfAbsent(K key, long value) {
+        long v = get(key);
+        if (v == Constants.DEFAULT_LONG_VALUE) {
             v = put(key, value);
         }
 
@@ -779,7 +753,7 @@ public interface LongMap<V> {
      * Removes the entry for the specified key only if it is currently
      * mapped to the specified value.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to, for this {@code map}:
      *
      * <pre> {@code
@@ -809,10 +783,10 @@ public interface LongMap<V> {
      *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default boolean remove(long key, Object value) {
-        Object curValue = get(key);
+    default boolean remove(K key, long value) {
+        long curValue = get(key);
         if (!Objects.equals(curValue, value) ||
-                (curValue == null && !containsKey(key))) {
+                (curValue == Constants.DEFAULT_LONG_VALUE && !containsKey(key))) {
             return false;
         }
         remove(key);
@@ -823,11 +797,11 @@ public interface LongMap<V> {
      * Replaces the entry for the specified key only if currently
      * mapped to the specified value.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to, for this {@code map}:
      *
      * <pre> {@code
-     * if (map.containsKey(key) && Objects.equals(map.get(key), value)) {
+     * if (map.containsKey(key) && Objects.equals(map.get(key), oldValue)) {
      *     map.put(key, newValue);
      *     return true;
      * } else
@@ -861,10 +835,10 @@ public interface LongMap<V> {
      *         or value prevents it from being stored in this map
      * @since 1.8
      */
-    default boolean replace(long key, V oldValue, V newValue) {
-        Object curValue = get(key);
-        if (!Objects.equals(curValue, oldValue) ||
-                (curValue == null && !containsKey(key))) {
+    default boolean replace(K key, long oldValue, long newValue) {
+        long curValue = get(key);
+        if (curValue != oldValue ||
+                (curValue == Constants.DEFAULT_LONG_VALUE && !containsKey(key))) {
             return false;
         }
         put(key, newValue);
@@ -875,7 +849,7 @@ public interface LongMap<V> {
      * Replaces the entry for the specified key only if it is
      * currently mapped to some value.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to, for this {@code map}:
      *
      * <pre> {@code
@@ -909,9 +883,9 @@ public interface LongMap<V> {
      *         or value prevents it from being stored in this map
      * @since 1.8
      */
-    default V replace(long key, V value) {
-        V curValue;
-        if (((curValue = get(key)) != null) || containsKey(key)) {
+    default long replace(K key, long value) {
+        long curValue;
+        if (((curValue = get(key)) != Constants.DEFAULT_LONG_VALUE) || containsKey(key)) {
             curValue = put(key, value);
         }
         return curValue;
@@ -941,14 +915,14 @@ public interface LongMap<V> {
      *
      * <p>The mapping function should not modify this map during computation.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to the following steps for this
      * {@code map}, then returning the current value or {@code null} if now
      * absent:
      *
      * <pre> {@code
      * if (map.get(key) == null) {
-     *     V newValue = mappingFunction.applyAsInt(key);
+     *     V newValue = mappingFunction.apply(key);
      *     if (newValue != null)
      *         map.put(key, newValue);
      * }
@@ -991,13 +965,13 @@ public interface LongMap<V> {
      *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default V computeIfAbsent(long key,
-                              LongFunction<? extends V> mappingFunction) {
+    default long computeIfAbsent(K key,
+                              ToLongFunction<? super K> mappingFunction) {
         Objects.requireNonNull(mappingFunction);
-        V v;
-        if ((v = get(key)) == null) {
-            V newValue;
-            if ((newValue = mappingFunction.apply(key)) != null) {
+        long v;
+        if ((v = get(key)) == Constants.DEFAULT_LONG_VALUE) {
+            long newValue;
+            if ((newValue = mappingFunction.applyAsLong(key)) != Constants.DEFAULT_LONG_VALUE) {
                 put(key, newValue);
                 return newValue;
             }
@@ -1016,7 +990,7 @@ public interface LongMap<V> {
      *
      * <p>The remapping function should not modify this map during computation.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to performing the following
      * steps for this {@code map}, then returning the current value or
      * {@code null} if now absent:
@@ -1024,7 +998,7 @@ public interface LongMap<V> {
      * <pre> {@code
      * if (map.get(key) != null) {
      *     V oldValue = map.get(key);
-     *     V newValue = remappingFunction.applyAsInt(key, oldValue);
+     *     V newValue = remappingFunction.apply(key, oldValue);
      *     if (newValue != null)
      *         map.put(key, newValue);
      *     else
@@ -1068,21 +1042,21 @@ public interface LongMap<V> {
      *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default V computeIfPresent(long key,
-                               LongBiFunction<? super V, ? extends V> remappingFunction) {
+    default long computeIfPresent(K key,
+                               ToLongObjLongBiFunction<? super K> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
-        V oldValue;
-        if ((oldValue = get(key)) != null) {
-            V newValue = remappingFunction.apply(key, oldValue);
-            if (newValue != null) {
+        long oldValue;
+        if ((oldValue = get(key)) != Constants.DEFAULT_LONG_VALUE) {
+            long newValue = remappingFunction.applyAsLong(key, oldValue);
+            if (newValue != Constants.DEFAULT_LONG_VALUE) {
                 put(key, newValue);
                 return newValue;
             } else {
                 remove(key);
-                return null;
+                return Constants.DEFAULT_LONG_VALUE;
             }
         } else {
-            return null;
+            return Constants.DEFAULT_LONG_VALUE;
         }
     }
 
@@ -1103,14 +1077,14 @@ public interface LongMap<V> {
      *
      * <p>The remapping function should not modify this map during computation.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to performing the following
      * steps for this {@code map}, then returning the current value or
      * {@code null} if absent:
      *
      * <pre> {@code
      * V oldValue = map.get(key);
-     * V newValue = remappingFunction.applyAsInt(key, oldValue);
+     * V newValue = remappingFunction.apply(key, oldValue);
      * if (oldValue != null) {
      *    if (newValue != null)
      *       map.put(key, newValue);
@@ -1160,21 +1134,21 @@ public interface LongMap<V> {
      *         (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    default V compute(long key,
-                      LongBiFunction<? super V, ? extends V> remappingFunction) {
+    default long compute(K key,
+                      ToLongObjLongBiFunction<? super K> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
-        V oldValue = get(key);
+        long oldValue = get(key);
 
-        V newValue = remappingFunction.apply(key, oldValue);
-        if (newValue == null) {
+        long newValue = remappingFunction.applyAsLong(key, oldValue);
+        if (newValue == Constants.DEFAULT_LONG_VALUE) {
             // delete mapping
-            if (oldValue != null || containsKey(key)) {
+            if (oldValue != Constants.DEFAULT_LONG_VALUE || containsKey(key)) {
                 // something to remove
                 remove(key);
-                return null;
+                return Constants.DEFAULT_LONG_VALUE;
             } else {
                 // nothing to do. Leave things as they were.
-                return null;
+                return Constants.DEFAULT_LONG_VALUE;
             }
         } else {
             // add or replace old mapping
@@ -1202,7 +1176,7 @@ public interface LongMap<V> {
      *
      * <p>The remapping function should not modify this map during computation.
      *
-     *
+     * @implSpec
      * The default implementation is equivalent to performing the following
      * steps for this {@code map}, then returning the current value or
      * {@code null} if absent:
@@ -1210,7 +1184,7 @@ public interface LongMap<V> {
      * <pre> {@code
      * V oldValue = map.get(key);
      * V newValue = (oldValue == null) ? value :
-     *              remappingFunction.applyAsInt(oldValue, value);
+     *              remappingFunction.apply(oldValue, value);
      * if (newValue == null)
      *     map.remove(key);
      * else
@@ -1258,14 +1232,13 @@ public interface LongMap<V> {
      *         null
      * @since 1.8
      */
-    default V merge(long key, V value,
-                    BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    default long merge(K key, long value,
+                       LongToLongBiFunction remappingFunction) {
         Objects.requireNonNull(remappingFunction);
-        Objects.requireNonNull(value);
-        V oldValue = get(key);
-        V newValue = (oldValue == null) ? value :
-                remappingFunction.apply(oldValue, value);
-        if (newValue == null) {
+        long oldValue = get(key);
+        long newValue = (oldValue == Constants.DEFAULT_LONG_VALUE) ? value :
+                remappingFunction.applyAsLong(oldValue, value);
+        if (newValue == Constants.DEFAULT_LONG_VALUE) {
             remove(key);
         } else {
             put(key, newValue);
@@ -1273,19 +1246,47 @@ public interface LongMap<V> {
         return newValue;
     }
 
+    /**
+     * Returns an unmodifiable map containing zero mappings.
+     * See <a href="#unmodifiable">Unmodifiable Maps</a> for details.
+     *
+     * @param <K> the {@code Map}'s key type
+     * @return an empty {@code Map}
+     *
+     * @since 9
+     */
+    @SuppressWarnings("unchecked")
+    static <K> MapToLong<K> of() {
+        return (MapToLong<K>) Containers.EMPTY_MAP_TO_LONG;
+    }
 
+    /**
+     * Returns an unmodifiable map containing a single mapping.
+     * See <a href="#unmodifiable">Unmodifiable Maps</a> for details.
+     *
+     * @param <K> the {@code Map}'s key type
+     * @param k1 the mapping's key
+     * @param v1 the mapping's value
+     * @return a {@code Map} containing the specified mapping
+     * @throws NullPointerException if the key or the value is {@code null}
+     *
+     * @since 9
+     */
+    static <K> MapToLong<K> of(K k1, long v1) {
+        return new Containers.MapToLong1<>(k1, v1);
+    }
 
 
     /**
-     * Returns an unmodifiable {@link Entry} containing the given key and value.
+     * Returns an unmodifiable {@link java.util.Map.Entry} containing the given key and value.
      * These entries are suitable for populating {@code Map} instances using the
-     * {@link Map#ofEntries Map.ofEntries()} method.
+     * {@link java.util.Map#ofEntries Map.ofEntries()} method.
      * The {@code Entry} instances created by this method have the following characteristics:
      *
      * <ul>
      * <li>They disallow {@code null} keys and values. Attempts to create them using a {@code null}
      * key or value result in {@code NullPointerException}.
-     * <li>They are unmodifiable. Calls to {@link Entry#setValue Entry.setValue()}
+     * <li>They are unmodifiable. Calls to {@link java.util.Map.Entry#setValue Entry.setValue()}
      * on a returned {@code Entry} result in {@code UnsupportedOperationException}.
      * <li>They are not serializable.
      * <li>They are <a href="../lang/doc-files/ValueBased.html">value-based</a>.
@@ -1295,20 +1296,21 @@ public interface LongMap<V> {
      * identity hash code, and synchronization) are unreliable and should be avoided.
      * </ul>
      *
-     *
+     * @apiNote
      * For a serializable {@code Entry}, see {@link AbstractMap.SimpleEntry} or
      * {@link AbstractMap.SimpleImmutableEntry}.
      *
-     * @param <V> the value's type
+     * @param <K> the key's type
      * @param k the key
      * @param v the value
      * @return an {@code Entry} containing the specified key and value
      * @throws NullPointerException if the key or value is {@code null}
      *
-     * @since 2.0
+     * @see java.util.Map#ofEntries Map.ofEntries()
+     * @since 9
      */
-    static <V> Entry<V> entry(long k, V v) {
+    static <K> Entry<K> entry(K k, long v) {
         // KeyValueHolder checks for nulls
-        return new LongKeyValue<>(k, v);
+        return new KeyLongValue<>(k, v);
     }
 }

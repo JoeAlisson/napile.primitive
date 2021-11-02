@@ -22,13 +22,10 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package io.github.joealisson.primitive.maps;
+package io.github.joealisson.primitive;
 
-import io.github.joealisson.primitive.Container;
 import io.github.joealisson.primitive.collections.DoubleCollection;
-import io.github.joealisson.primitive.IntCollection;
 import io.github.joealisson.primitive.pair.IntDouble;
-import io.github.joealisson.primitive.IntSet;
 
 import java.util.Objects;
 import java.util.Set;

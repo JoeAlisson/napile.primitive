@@ -5226,7 +5226,7 @@ public class CHashLongLongMap<V> extends AbstractLongMap<V>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
-                int r = 0;
+                long r = 0;
                 for (Node<V> p; (p = advance()) != null; ) {
                     long u = p.key;
                     r = reducer.applyAsLong(r, u);

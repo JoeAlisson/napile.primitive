@@ -1,37 +1,14 @@
-/*
- * Copyright (c) 1997, 2007, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
- */
-package io.github.joealisson.primitive.maps.abstracts;
+package io.github.joealisson.primitive;
 
-import java.util.*;
-
-import io.github.joealisson.primitive.pair.LongObject;
-import io.github.joealisson.primitive.iterators.LongIterator;
-import io.github.joealisson.primitive.maps.LongObjectMap;
-import io.github.joealisson.primitive.LongSet;
+import io.github.joealisson.primitive.collections.DoubleCollection;
+import io.github.joealisson.primitive.collections.abstracts.AbstractDoubleCollection;
+import io.github.joealisson.primitive.iterators.DoubleIterator;
+import io.github.joealisson.primitive.pair.IntDouble;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
-import io.github.joealisson.primitive.AbstractLongSet;
+
+import java.util.Iterator;
+import java.util.PrimitiveIterator;
+import java.util.Set;
 
 /**
  * <p>
@@ -63,20 +40,16 @@ import io.github.joealisson.primitive.AbstractLongSet;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
- * @param <V> the type of mapped values
- * @author Josh Bloch
- * @author Neal Gafter
- * @version %I%, %G%
- * @see LongObjectMap
+ * @see IntDoubleMap
  * @since 1.0.0
  */
-public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
+public abstract class AbstractIntDoubleMap implements IntDoubleMap
 {
 	/**
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
-	protected AbstractLongObjectMap()
+	protected AbstractIntDoubleMap()
 	{
 	}
 
@@ -84,7 +57,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 
 	/**
 	 * {@inheritDoc}
-	 * <p>This implementation returns entrySet().size().</p>
+	 * <p>This implementation returns entrySet().size().
 	 */
 	public int size()
 	{
@@ -93,7 +66,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 
 	/**
 	 * {@inheritDoc}
-	 * <p>This implementation returns size() == 0.</p>
+	 * <p>This implementation returns size() == 0.
 	 */
 	public boolean isEmpty()
 	{
@@ -107,34 +80,15 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * true is returned.  If the iteration terminates without
 	 * finding such an entry, false is returned.  Note that this
 	 * implementation requires linear time in the size of the map.
-	 * </p>
 	 *
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public boolean containsValue(Object value)
+	public boolean containsValue(double value)
 	{
-		Iterator<LongObject<V>> i = entrySet().iterator();
-		if(value == null)
-		{
-			while(i.hasNext())
-			{
-				LongObject<V> e = i.next();
-				if(e.getValue() == null)
-				{
-					return true;
-				}
-			}
-		}
-		else
-		{
-			while(i.hasNext())
-			{
-				LongObject<V> e = i.next();
-				if(value.equals(e.getValue()))
-				{
-					return true;
-				}
+		for (IntDouble e : entrySet()) {
+			if (value == e.getValue()) {
+				return true;
 			}
 		}
 		return false;
@@ -148,21 +102,18 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * finding such an entry, false is returned.  Note that this
 	 * implementation requires linear time in the size of the map; many
 	 * implementations will override this method.
-	 * </p>
 	 *
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public boolean containsKey(long key)
+	public boolean containsKey(int key)
 	{
-		Iterator<LongObject<V>> i = entrySet().iterator();
+		Iterator<IntDouble> i = entrySet().iterator();
 		while(i.hasNext())
 		{
-			LongObject<V> e = i.next();
+			IntDouble e = i.next();
 			if(key == e.getKey())
-			{
 				return true;
-			}
 		}
 		return false;
 	}
@@ -175,24 +126,17 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * finding such an entry, null is returned.  Note that this
 	 * implementation requires linear time in the size of the map; many
 	 * implementations will override this method.
-	 * </p>
 	 *
 	 * @throws ClassCastException   {@inheritDoc}
 	 * @throws NullPointerException {@inheritDoc}
 	 */
-	public V get(long key)
+	public double get(int key)
 	{
-		Iterator<LongObject<V>> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			LongObject<V> e = i.next();
+		for(IntDouble e : entrySet())
 			if(key == e.getKey())
-			{
 				return e.getValue();
-			}
-		}
 
-		return null;
+		return Constants.DEFAULT_LONG_VALUE;
 	}
 
 
@@ -202,21 +146,22 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * {@inheritDoc}
 	 * <p>This implementation always throws an
 	 * UnsupportedOperationException.
-	 * </p>
 	 *
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public V put(long key, V value) {
+	public double put(int key, double value)
+	{
 		throw new UnsupportedOperationException();
 	}
 
 	/**
 	 * {@inheritDoc}
+	 *
 	 */
-	public V putIfAbsent(long key, V value) {
+	public double putIfAbsent(int key, double value) {
 		return containsKey(key) ? get(key) : put(key, value);
 	}
 
@@ -235,28 +180,25 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * UnsupportedOperationException if the entrySet
 	 * iterator does not support the remove method and this map
 	 * contains a mapping for the specified key.
-	 * </p>
 	 *
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
 	 */
-	public V remove(long key)
+	public double remove(int key)
 	{
-		Iterator<LongObject<V>> i = entrySet().iterator();
-		LongObject<V> correctEntry = null;
+		Iterator<IntDouble> i = entrySet().iterator();
+		IntDouble correctEntry = null;
 
 		while(correctEntry == null && i.hasNext())
 		{
-			LongObject<V> e = i.next();
+			IntDouble e = i.next();
 			if(key == e.getKey())
-			{
 				correctEntry = e;
-			}
 		}
 
 
-		V oldValue = null;
+		double oldValue = Constants.DEFAULT_LONG_VALUE;
 		if(correctEntry != null)
 		{
 			oldValue = correctEntry.getValue();
@@ -277,19 +219,16 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * <p>Note that this implementation throws an
 	 * UnsupportedOperationException if this map does not support
 	 * the put operation and the specified map is nonempty.
-	 * </p>
 	 *
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 * @throws ClassCastException			{@inheritDoc}
 	 * @throws NullPointerException		  {@inheritDoc}
 	 * @throws IllegalArgumentException	  {@inheritDoc}
 	 */
-	public void putAll(LongObjectMap<? extends V> m)
+	public void putAll(IntDoubleMap m)
 	{
-		for(LongObject<? extends V> e : m.entrySet())
-		{
+		for(IntDouble e : m.entrySet())
 			put(e.getKey(), e.getValue());
-		}
 	}
 
 	/**
@@ -299,7 +238,6 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * <p>Note that this implementation throws an
 	 * UnsupportedOperationException if the entrySet
 	 * does not support the clear operation.
-	 * </p>
 	 *
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 */
@@ -316,8 +254,8 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * appropriate view the first time this view is requested.  The views are
 	 * stateless, so there's no reason to create more than one of each.
 	 */
-	protected transient volatile LongSet keySet = null;
-	protected transient volatile Collection<V> values = null;
+	protected transient volatile IntSet keySet = null;
+	protected transient volatile DoubleCollection values = null;
 
 	/**
 	 * {@inheritDoc}
@@ -333,32 +271,28 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * is performed, so there is a slight chance that multiple calls to this
 	 * method will not all return the same set.
 	 */
-	public LongSet keySet()
+	public IntSet keySet()
 	{
 		if(keySet == null)
 		{
-			keySet = new AbstractLongSet()
+			keySet = new AbstractIntSet()
 			{
-				@Override
-				public PrimitiveIterator.OfLong iterator()
+				public PrimitiveIterator.OfInt iterator()
 				{
-					return new PrimitiveIterator.OfLong()
+					return new PrimitiveIterator.OfInt()
 					{
-						private Iterator<LongObject<V>> i = entrySet().iterator();
+						private Iterator<IntDouble> i = entrySet().iterator();
 
-						@Override
 						public boolean hasNext()
 						{
 							return i.hasNext();
 						}
 
-						@Override
-						public long nextLong()
+						public int nextInt()
 						{
 							return i.next().getKey();
 						}
 
-						@Override
 						public void remove()
 						{
 							i.remove();
@@ -366,16 +300,14 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 					};
 				}
 
-				@Override
 				public int size()
 				{
-					return AbstractLongObjectMap.this.size();
+					return AbstractIntDoubleMap.this.size();
 				}
 
-				@Override
-				public boolean contains(long k)
+				public boolean contains(int k)
 				{
-					return AbstractLongObjectMap.this.containsKey(k);
+					return AbstractIntDoubleMap.this.containsKey(k);
 				}
 			};
 		}
@@ -385,7 +317,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	/**
 	 * {@inheritDoc}
 	 * <p>This implementation returns a collection that subclasses {@link
-	 * AbstractCollection}.  The subclass's iterator method returns a
+	 * java.util.AbstractCollection}.  The subclass's iterator method returns a
 	 * "wrapper object" over this map's entrySet() iterator.
 	 * The size method delegates to this map's size
 	 * method and the contains method delegates to this map's
@@ -396,33 +328,28 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * performed, so there is a slight chance that multiple calls to this
 	 * method will not all return the same collection.
 	 */
-	@Override
-	public Collection<V> values()
+	public DoubleCollection values()
 	{
 		if(values == null)
 		{
-			values = new AbstractCollection<V>()
+			values = new AbstractDoubleCollection()
 			{
-				@Override
-				public Iterator<V> iterator()
+				public DoubleIterator iterator()
 				{
-					return new Iterator<V>()
+					return new DoubleIterator()
 					{
-						private Iterator<LongObject<V>> i = entrySet().iterator();
+						private Iterator<IntDouble> i = entrySet().iterator();
 
-						@Override
 						public boolean hasNext()
 						{
 							return i.hasNext();
 						}
 
-						@Override
-						public V next()
+						public double next()
 						{
 							return i.next().getValue();
 						}
 
-						@Override
 						public void remove()
 						{
 							i.remove();
@@ -430,23 +357,21 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 					};
 				}
 
-				@Override
 				public int size()
 				{
-					return AbstractLongObjectMap.this.size();
+					return AbstractIntDoubleMap.this.size();
 				}
 
-				@Override
-				public boolean contains(Object v)
+				public boolean contains(long v)
 				{
-					return AbstractLongObjectMap.this.containsValue(v);
+					return AbstractIntDoubleMap.this.containsValue(v);
 				}
 			};
 		}
 		return values;
 	}
 
-	public abstract Set<LongObject<V>> entrySet();
+	public abstract Set<IntDouble> entrySet();
 
 
 	// Comparison and hashing
@@ -480,12 +405,11 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 			return true;
 		}
 
-		if(!(o instanceof LongObjectMap))
+		if(!(o instanceof IntLongMap))
 		{
 			return false;
 		}
-		@SuppressWarnings("unchecked")
-		LongObjectMap<V> m = (LongObjectMap<V>) o;
+		IntLongMap m = (IntLongMap) o;
 		if(m.size() != size())
 		{
 			return false;
@@ -493,25 +417,15 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 
 		try
 		{
-			Iterator<LongObject<V>> i = entrySet().iterator();
+			Iterator<IntDouble> i = entrySet().iterator();
 			while(i.hasNext())
 			{
-				LongObject<V> e = i.next();
-				long key = e.getKey();
-				V value = e.getValue();
-				if(value == null)
+				IntDouble e = i.next();
+				int key = e.getKey();
+				double value = e.getValue();
+				if(value != m.get(key))
 				{
-					if(!(m.get(key) == null && m.containsKey(key)))
-					{
-						return false;
-					}
-				}
-				else
-				{
-					if(!value.equals(m.get(key)))
-					{
-						return false;
-					}
+					return false;
 				}
 			}
 		}
@@ -533,22 +447,19 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 * {@link Object#hashCode}.
 	 * </p>
 	 * <p>This implementation iterates over entrySet(), calling
-	 * {@link Map.Entry#hashCode hashCode()} on each element (entry) in the
+	 * {@link java.util.Map.Entry#hashCode hashCode()} on each element (entry) in the
 	 * set, and adding up the results.
 	 *
 	 * @return the hash code value for this map
-	 * @see Map.Entry#hashCode()
+	 * @see java.util.Map.Entry#hashCode()
 	 * @see Object#equals(Object)
 	 * @see Set#equals(Object)
 	 */
 	public int hashCode()
 	{
 		int h = 0;
-		Iterator<LongObject<V>> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			h += i.next().hashCode();
-		}
+		for(IntDouble intDoublePair : entrySet())
+			h += intDoublePair.hashCode();
 		return h;
 	}
 
@@ -566,7 +477,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	public String toString()
 	{
-		Iterator<LongObject<V>> i = entrySet().iterator();
+		Iterator<IntDouble> i = entrySet().iterator();
 		if(!i.hasNext())
 		{
 			return "{}";
@@ -576,12 +487,12 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 		sb.append('{');
 		for(; ;)
 		{
-			LongObject<V> e = i.next();
-			long key = e.getKey();
-			V value = e.getValue();
+			IntDouble e = i.next();
+			int key = e.getKey();
+			double value = e.getValue();
 			sb.append(key);
 			sb.append('=');
-			sb.append(value == this ? "(this Map)" : value);
+			sb.append(value);
 			if(!i.hasNext())
 			{
 				return sb.append('}').toString();
@@ -598,8 +509,7 @@ public abstract class AbstractLongObjectMap<V> implements LongObjectMap<V>
 	 */
 	protected Object clone() throws CloneNotSupportedException
 	{
-		@SuppressWarnings("unchecked")
-		AbstractLongObjectMap<V> result = (AbstractLongObjectMap<V>) super.clone();
+		AbstractIntDoubleMap result = (AbstractIntDoubleMap) super.clone();
 		result.keySet = null;
 		result.values = null;
 		return result;

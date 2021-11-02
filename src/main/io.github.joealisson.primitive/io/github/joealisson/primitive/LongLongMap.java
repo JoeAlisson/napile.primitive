@@ -532,7 +532,7 @@ public interface LongLongMap {
          static Comparator<Entry> comparingByKey(LongComparator cmp) {
             Objects.requireNonNull(cmp);
             return (Comparator<Entry> & Serializable)
-                    (c1, c2) -> cmp.compare(c1.getKey(), c2.getKey());
+                    (c1, c2) -> (int) cmp.compare(c1.getKey(), c2.getKey());
         }
 
         /**
@@ -549,7 +549,7 @@ public interface LongLongMap {
          static Comparator<Entry> comparingByValue(LongComparator cmp) {
             Objects.requireNonNull(cmp);
             return (Comparator<Entry> & Serializable)
-                    (c1, c2) -> cmp.compare(c1.getValue(), c2.getValue());
+                    (c1, c2) -> (int) cmp.compare(c1.getValue(), c2.getValue());
         }
     }
 

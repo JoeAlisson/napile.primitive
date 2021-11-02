@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package io.github.joealisson.primitive.maps.impl;
+package io.github.joealisson.primitive;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -25,14 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.pair.impl.IntLongImpl;
-import io.github.joealisson.primitive.Constants;
-import io.github.joealisson.primitive.LongCollection;
-import io.github.joealisson.primitive.AbstractLongCollection;
 import io.github.joealisson.primitive.iterators.LongIterator;
-import io.github.joealisson.primitive.maps.CIntLongMap;
-import io.github.joealisson.primitive.maps.IntLongMap;
-import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
-import io.github.joealisson.primitive.IntSet;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 /**

@@ -11,9 +11,6 @@ module io.github.joealisson.primitive {
     exports io.github.joealisson.primitive.lists.abstracts;
     exports io.github.joealisson.primitive.lists.impl;
     exports io.github.joealisson.primitive.lists;
-    exports io.github.joealisson.primitive.maps.abstracts;
-    exports io.github.joealisson.primitive.maps.impl;
-    exports io.github.joealisson.primitive.maps;
     exports io.github.joealisson.primitive.pair.absint.value;
     exports io.github.joealisson.primitive.pair.absint.key;
     exports io.github.joealisson.primitive.pair.abstracts;

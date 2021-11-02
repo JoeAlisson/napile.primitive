@@ -1,39 +1,16 @@
-/*
- * Primitive Collection Framework for Java
- * Copyright (C) 2011 napile.org
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
-package io.github.joealisson.primitive.maps.impl;
+package io.github.joealisson.primitive;
+
+import io.github.joealisson.primitive.collections.DoubleCollection;
+import io.github.joealisson.primitive.collections.abstracts.AbstractDoubleCollection;
+import io.github.joealisson.primitive.iterators.DoubleIterator;
+import io.github.joealisson.primitive.pair.IntDouble;
+import io.github.joealisson.primitive.pair.IntLong;
+import io.github.joealisson.primitive.pair.impl.IntDoubleImpl;
+import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-
-import io.github.joealisson.primitive.IntCollection;
-import io.github.joealisson.primitive.HashUtils;
-import io.github.joealisson.primitive.pair.IntLong;
-import io.github.joealisson.primitive.pair.impl.IntLongImpl;
-import io.github.joealisson.primitive.Constants;
-import io.github.joealisson.primitive.LongCollection;
-import io.github.joealisson.primitive.AbstractLongCollection;
-import io.github.joealisson.primitive.iterators.LongIterator;
-import io.github.joealisson.primitive.maps.IntLongMap;
-import io.github.joealisson.primitive.maps.abstracts.AbstractIntLongMap;
-import io.github.joealisson.primitive.IntSet;
-import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
 /**
  * <p>
@@ -100,7 +77,7 @@ import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
  * are <i>fail-fast</i>: if the map is structurally modified at any time after
  * the iterator is created, in any way except through the iterator's own
  * remove method, the iterator will throw a
- * {@link java.util.ConcurrentModificationException}.  Thus, in the face of concurrent
+ * {@link ConcurrentModificationException}.  Thus, in the face of concurrent
  * modification, the iterator fails quickly and cleanly, rather than risking
  * arbitrary, non-deterministic behavior at an undetermined time in the
  * future.
@@ -117,17 +94,11 @@ import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
- * @author Doug Lea
- * @author Josh Bloch
- * @author Arthur van Hoff
- * @author Neal Gafter
- * @version %I%, %G%
  * @see Object#hashCode()
  * @see IntCollection
  * @since 1.0.0
  */
-@SuppressWarnings("unchecked")
-public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cloneable, Serializable
+public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleMap, Cloneable, Serializable
 {
 	/**
 	 * The default initial capacity - MUST be a power of two.
@@ -188,7 +159,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * @throws IllegalArgumentException if the initial capacity is negative
 	 *                                  or the load factor is nonpositive
 	 */
-	public HashIntLongMap(int initialCapacity, float loadFactor)
+	public HashIntDoubleMap(int initialCapacity, float loadFactor)
 	{
 		if(initialCapacity < 0)
 		{
@@ -223,7 +194,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * @param initialCapacity the initial capacity.
 	 * @throws IllegalArgumentException if the initial capacity is negative.
 	 */
-	public HashIntLongMap(int initialCapacity)
+	public HashIntDoubleMap(int initialCapacity)
 	{
 		this(initialCapacity, DEFAULT_LOAD_FACTOR);
 	}
@@ -232,7 +203,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * Constructs an empty HashMap with the default initial capacity
 	 * (16) and the default load factor (0.75).
 	 */
-	public HashIntLongMap()
+	public HashIntDoubleMap()
 	{
 		this.loadFactor = DEFAULT_LOAD_FACTOR;
 		threshold = (int) (DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
@@ -249,7 +220,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * @param m the map whose mappings are to be placed in this map
 	 * @throws NullPointerException if the specified map is null
 	 */
-	public HashIntLongMap(IntLongMap m)
+	public HashIntDoubleMap(IntDoubleMap m)
 	{
 		this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR);
 		putAllForCreate(m);
@@ -329,9 +300,9 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * The {@link #containsKey(int)} operation may be used to
 	 * distinguish these two cases.
 	 *
-	 * @see #put(int, long)
+	 * @see #put(int, double)
 	 */
-	public long get(int key)
+	public double get(int key)
 	{
 		int hash = hash(key);
 		for(Entry e = table[indexFor(hash, table.length)]; e != null; e = e.next)
@@ -383,7 +354,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 *         (A null return can also indicate that the map
 	 *         previously associated null with key.)
 	 */
-	public long put(int key, long value)
+	public double put(int key, double value)
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
@@ -391,7 +362,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		{
 			if(e.hash == hash && e.getKey() == key)
 			{
-				long oldValue = e.setValue(value);
+				double oldValue = e.setValue(value);
 				e.recordAccess(this);
 				return oldValue;
 			}
@@ -408,7 +379,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * check for comodification, etc.  It calls createEntry rather than
 	 * addEntry.
 	 */
-	private void putForCreate(int key, long value)
+	private void putForCreate(int key, double value)
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
@@ -430,11 +401,11 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		createEntry(hash, key, value, i);
 	}
 
-	private void putAllForCreate(IntLongMap m)
+	private void putAllForCreate(IntDoubleMap m)
 	{
-		for(Iterator<IntLong> i = m.entrySet().iterator(); i.hasNext();)
+		for(Iterator<IntDouble> i = m.entrySet().iterator(); i.hasNext();)
 		{
-			IntLong e = i.next();
+			IntDouble e = i.next();
 			putForCreate(e.getKey(), e.getValue());
 		}
 	}
@@ -555,7 +526,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 *         previously associated null with key.)
 	 */
 	@Override
-	public long remove(int key)
+	public double remove(int key)
 	{
 		Entry e = removeEntryForKey(key);
 		return (e == null ? Constants.DEFAULT_LONG_VALUE : e.getValue());
@@ -687,10 +658,10 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 */
 	public Object clone()
 	{
-		HashIntLongMap result = null;
+		HashIntDoubleMap result = null;
 		try
 		{
-			result = (HashIntLongMap) super.clone();
+			result = (HashIntDoubleMap) super.clone();
 		}
 		catch(CloneNotSupportedException e)
 		{
@@ -706,7 +677,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		return result;
 	}
 
-	static class Entry extends IntLongImpl
+	static class Entry extends IntDoubleImpl
 	{
 		Entry next;
 		final int hash;
@@ -714,14 +685,14 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		/**
 		 * Creates new entry.
 		 */
-		Entry(int h, int k, long v, Entry n)
+		Entry(int h, int k, double v, Entry n)
 		{
 			super(k, v);
 			next = n;
 			hash = h;
 		}
 
-		void recordAccess(HashIntLongMap m)
+		void recordAccess(HashIntDoubleMap m)
 		{
 		}
 
@@ -729,7 +700,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		 * This method is invoked whenever the entry is
 		 * removed from the table.
 		 */
-		void recordRemoval(HashIntLongMap m)
+		void recordRemoval(HashIntDoubleMap m)
 		{
 		}
 	}
@@ -741,7 +712,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * </p>
 	 * Subclass overrides this to alter the behavior of put method.
 	 */
-	void addEntry(int hash, int key, long value, int bucketIndex)
+	void addEntry(int hash, int key, double value, int bucketIndex)
 	{
 		Entry e = table[bucketIndex];
 		table[bucketIndex] = new Entry(hash, key, value, e);
@@ -759,21 +730,21 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * Subclass overrides this to alter the behavior of HashMap(Map),
 	 * clone, and readObject.
 	 */
-	void createEntry(int hash, int key, long value, int bucketIndex)
+	void createEntry(int hash, int key, double value, int bucketIndex)
 	{
 		Entry e = table[bucketIndex];
 		table[bucketIndex] = new Entry(hash, key, value, e);
 		size++;
 	}
 
-	private abstract class HashLongIterator implements LongIterator
+	private abstract class HashDoubleIterator implements DoubleIterator
 	{
 		Entry next;	// next entry to return
 		int expectedModCount;	// For fast-fail
 		int index;		// current slot
 		Entry current;	// current entry
 
-		HashLongIterator()
+		HashDoubleIterator()
 		{
 			expectedModCount = modCount;
 			if(size > 0)
@@ -827,7 +798,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 			}
 			int k = current.getKey();
 			current = null;
-			HashIntLongMap.this.removeEntryForKey(k);
+			HashIntDoubleMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
 		}
 	}
@@ -893,7 +864,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 			}
 			int k = current.getKey();
 			current = null;
-			HashIntLongMap.this.removeEntryForKey(k);
+			HashIntDoubleMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
 		}
 	}
@@ -959,14 +930,14 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 			}
 			int k = current.getKey();
 			current = null;
-			HashIntLongMap.this.removeEntryForKey(k);
+			HashIntDoubleMap.this.removeEntryForKey(k);
 			expectedModCount = modCount;
 		}
 	}
 
-	private final class ValueIterator extends HashLongIterator
+	private final class ValueIterator extends HashDoubleIterator
 	{
-		public long nextLong()
+		public double next()
 		{
 			return nextEntry().getValue();
 		}
@@ -980,9 +951,9 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		}
 	}
 
-	private final class EntryIterator extends HashIterator<IntLong>
+	private final class EntryIterator extends HashIterator<IntDouble>
 	{
-		public IntLong next()
+		public IntDouble next()
 		{
 			return nextEntry();
 		}
@@ -994,12 +965,12 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		return new KeyIterator();
 	}
 
-	LongIterator newValueIterator()
+	DoubleIterator newValueIterator()
 	{
 		return new ValueIterator();
 	}
 
-	Iterator<IntLong> newEntryIterator()
+	Iterator<IntDouble> newEntryIterator()
 	{
 		return new EntryIterator();
 	}
@@ -1007,10 +978,10 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 
 	// Views
 
-	private transient Set<IntLong> entrySet = null;
+	private transient Set<IntDouble> entrySet = null;
 
 	/**
-	 * Returns a {@link java.util.Set} view of the keys contained in this map.
+	 * Returns a {@link Set} view of the keys contained in this map.
 	 * The set is backed by the map, so changes to the map are
 	 * reflected in the set, and vice-versa.  If the map is modified
 	 * while an iteration over the set is in progress (except through
@@ -1047,12 +1018,12 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 
 		public boolean remove(int o)
 		{
-			return HashIntLongMap.this.removeEntryForKey(o) != null;
+			return HashIntDoubleMap.this.removeEntryForKey(o) != null;
 		}
 
 		public void clear()
 		{
-			HashIntLongMap.this.clear();
+			HashIntDoubleMap.this.clear();
 		}
 	}
 
@@ -1069,15 +1040,15 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * retainAll and clear operations.  It does not
 	 * support the add or addAll operations.
 	 */
-	public LongCollection values()
+	public DoubleCollection values()
 	{
-		LongCollection vs = values;
+		DoubleCollection vs = values;
 		return (vs != null ? vs : (values = new Values()));
 	}
 
-	private final class Values extends AbstractLongCollection
+	private final class Values extends AbstractDoubleCollection
 	{
-		public LongIterator iterator()
+		public DoubleIterator iterator()
 		{
 			return newValueIterator();
 		}
@@ -1094,12 +1065,12 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 
 		public void clear()
 		{
-			HashIntLongMap.this.clear();
+			HashIntDoubleMap.this.clear();
 		}
 	}
 
 	/**
-	 * Returns a {@link java.util.Set} view of the mappings contained in this map.
+	 * Returns a {@link Set} view of the mappings contained in this map.
 	 * The set is backed by the map, so changes to the map are
 	 * reflected in the set, and vice-versa.  If the map is modified
 	 * while an iteration over the set is in progress (except through
@@ -1114,20 +1085,20 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 *
 	 * @return a set view of the mappings contained in this map
 	 */
-	public Set<IntLong> entrySet()
+	public Set<IntDouble> entrySet()
 	{
 		return entrySet0();
 	}
 
-	private Set<IntLong> entrySet0()
+	private Set<IntDouble> entrySet0()
 	{
-		Set<IntLong> es = entrySet;
+		Set<IntDouble> es = entrySet;
 		return es != null ? es : (entrySet = new EntrySet());
 	}
 
-	private final class EntrySet extends AbstractSet<IntLong>
+	private final class EntrySet extends AbstractSet<IntDouble>
 	{
-		public Iterator<IntLong> iterator()
+		public Iterator<IntDouble> iterator()
 		{
 			return newEntryIterator();
 		}
@@ -1155,7 +1126,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 
 		public void clear()
 		{
-			HashIntLongMap.this.clear();
+			HashIntDoubleMap.this.clear();
 		}
 	}
 
@@ -1171,11 +1142,11 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * emitted in no particular order.
 	 *
 	 * @param s the stream
-	 * @throws java.io.IOException if the stream throws a exception
+	 * @throws IOException if the stream throws a exception
 	 */
 	private void writeObject(java.io.ObjectOutputStream s) throws IOException
 	{
-		Iterator<IntLong> i = (size > 0) ? entrySet0().iterator() : null;
+		Iterator<IntDouble> i = (size > 0) ? entrySet0().iterator() : null;
 
 		// Write out the threshold, loadfactor, and any hidden stuff
 		s.defaultWriteObject();
@@ -1191,7 +1162,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 		{
 			while(i.hasNext())
 			{
-				IntLong e = i.next();
+				IntDouble e = i.next();
 				s.writeInt(e.getKey());
 				s.writeObject(e.getValue());
 			}
@@ -1205,7 +1176,7 @@ public class HashIntLongMap extends AbstractIntLongMap implements IntLongMap, Cl
 	 * deserialize it).
 	 *
 	 * @param s the stream
-	 * @throws java.io.IOException if the stream throws a exception
+	 * @throws IOException if the stream throws a exception
 	 * @throws  ClassNotFoundException it the stream represent a unknown class
 	 */
 	private void readObject(java.io.ObjectInputStream s) throws IOException, ClassNotFoundException
