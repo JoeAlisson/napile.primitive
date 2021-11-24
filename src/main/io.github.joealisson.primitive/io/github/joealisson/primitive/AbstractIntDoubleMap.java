@@ -1,8 +1,5 @@
 package io.github.joealisson.primitive;
 
-import io.github.joealisson.primitive.collections.DoubleCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractDoubleCollection;
-import io.github.joealisson.primitive.iterators.DoubleIterator;
 import io.github.joealisson.primitive.pair.IntDouble;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
@@ -108,11 +105,8 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 	 */
 	public boolean containsKey(int key)
 	{
-		Iterator<IntDouble> i = entrySet().iterator();
-		while(i.hasNext())
-		{
-			IntDouble e = i.next();
-			if(key == e.getKey())
+		for (IntDouble e : entrySet()) {
+			if (key == e.getKey())
 				return true;
 		}
 		return false;
@@ -281,7 +275,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 				{
 					return new PrimitiveIterator.OfInt()
 					{
-						private Iterator<IntDouble> i = entrySet().iterator();
+						private final Iterator<IntDouble> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
@@ -334,19 +328,24 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 		{
 			values = new AbstractDoubleCollection()
 			{
-				public DoubleIterator iterator()
+				public PrimitiveIterator.OfDouble iterator()
 				{
-					return new DoubleIterator()
+					return new PrimitiveIterator.OfDouble()
 					{
-						private Iterator<IntDouble> i = entrySet().iterator();
+						private final Iterator<IntDouble> i = entrySet().iterator();
 
 						public boolean hasNext()
 						{
 							return i.hasNext();
 						}
 
-						public double next()
+						public Double next()
 						{
+							return i.next().getValue();
+						}
+
+						@Override
+						public double nextDouble() {
 							return i.next().getValue();
 						}
 
@@ -362,7 +361,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 					return AbstractIntDoubleMap.this.size();
 				}
 
-				public boolean contains(long v)
+				public boolean contains(double v)
 				{
 					return AbstractIntDoubleMap.this.containsValue(v);
 				}
@@ -405,11 +404,11 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 			return true;
 		}
 
-		if(!(o instanceof IntLongMap))
+		if(!(o instanceof IntDoubleMap))
 		{
 			return false;
 		}
-		IntLongMap m = (IntLongMap) o;
+		IntDoubleMap m = (IntDoubleMap) o;
 		if(m.size() != size())
 		{
 			return false;
@@ -417,14 +416,10 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 
 		try
 		{
-			Iterator<IntDouble> i = entrySet().iterator();
-			while(i.hasNext())
-			{
-				IntDouble e = i.next();
+			for (IntDouble e : entrySet()) {
 				int key = e.getKey();
 				double value = e.getValue();
-				if(value != m.get(key))
-				{
+				if (value != m.get(key)) {
 					return false;
 				}
 			}

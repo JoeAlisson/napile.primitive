@@ -22,12 +22,12 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package io.github.joealisson.primitive.collections;
-
-import io.github.joealisson.primitive.*;
-import io.github.joealisson.primitive.iterators.DoubleIterator;
+package io.github.joealisson.primitive;
 
 import java.util.Objects;
+import java.util.PrimitiveIterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.DoubleConsumer;
 
 /**
@@ -110,16 +110,15 @@ import java.util.function.DoubleConsumer;
  * Java Collections Framework</a>.
  *
  * @see     IntSet
- * @see     IntList
- * @see	 io.github.joealisson.primitive.sets.SortedIntSet
+ * @see     DoubleList
+ * @see	 	io.github.joealisson.primitive.sets.SortedIntSet
  * @see     HashIntSet
  * @see     ArrayIntList
- * @see     AbstractIntCollection
+ * @see     AbstractDoubleCollection
  * @see  Containers
  * @since 1.0.0
  */
-public interface DoubleCollection extends Container
-{
+public interface DoubleCollection extends Container {
 	// Query Operations
 
 	/**
@@ -162,7 +161,7 @@ public interface DoubleCollection extends Container
 	 *
 	 * @return an Iterator over the elements in this collection
 	 */
-	DoubleIterator iterator();
+	PrimitiveIterator.OfDouble iterator();
 
 	/**
 	 * <p>
@@ -392,7 +391,7 @@ public interface DoubleCollection extends Container
 	 */
 	default void forEach(DoubleConsumer action) {
 		Objects.requireNonNull(action);
-		iterator().forEach(action);
+		iterator().forEachRemaining(action);
 	}
 
 	/**
@@ -458,4 +457,8 @@ public interface DoubleCollection extends Container
 	 * @see Object#equals(Object)
 	 */
 	int hashCode();
+
+	default Spliterator.OfDouble spliterator() {
+		return Spliterators.spliterator(iterator(), size(), Spliterator.ORDERED);
+	}
 }

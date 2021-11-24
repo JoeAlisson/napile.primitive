@@ -6,8 +6,6 @@ module io.github.joealisson.primitive {
     exports io.github.joealisson.primitive.iterators;
     exports io.github.joealisson.primitive.comparators;
 
-    exports io.github.joealisson.primitive.collections;
-    exports io.github.joealisson.primitive.collections.abstracts;
     exports io.github.joealisson.primitive.lists.abstracts;
     exports io.github.joealisson.primitive.lists.impl;
     exports io.github.joealisson.primitive.lists;

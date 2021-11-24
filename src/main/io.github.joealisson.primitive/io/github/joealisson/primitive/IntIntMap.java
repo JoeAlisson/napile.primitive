@@ -609,7 +609,7 @@ public interface IntIntMap {
      */
     default int getOrDefault(int key, int defaultValue) {
         int v;
-        return (((v = get(key)) != 0) || containsKey(key)) ? v : defaultValue;
+        return (((v = get(key)) != DEFAULT_INT_VALUE) || containsKey(key)) ? v : defaultValue;
     }
 
     /**

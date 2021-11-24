@@ -1,9 +1,7 @@
-package io.github.joealisson.primitive.collections.abstracts;
-
-import io.github.joealisson.primitive.collections.DoubleCollection;
-import io.github.joealisson.primitive.iterators.DoubleIterator;
+package io.github.joealisson.primitive;
 
 import java.util.Arrays;
+import java.util.PrimitiveIterator;
 
 /**
  * <p>
@@ -40,26 +38,15 @@ import java.util.Arrays;
  * @see DoubleCollection
  * @since 1.0.0
  */
-public abstract class AbstractDoubleCollection implements DoubleCollection
-{
+public abstract class AbstractDoubleCollection implements DoubleCollection {
 	/**
 	 * Sole constructor.  (For invocation by subclass constructors, typically
 	 * implicit.)
 	 */
-	protected AbstractDoubleCollection()
-	{
+	protected AbstractDoubleCollection() {
 	}
 
 	// Query Operations
-
-	/**
-	 * Returns an iterator over the elements contained in this collection.
-	 *
-	 * @return an iterator over the elements contained in this collection
-	 */
-	public abstract DoubleIterator iterator();
-
-	public abstract int size();
 
 	/**
 	 * {@inheritDoc}
@@ -80,17 +67,13 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @throws NullPointerException {@inheritDoc}
 	 */
 	@Override
-	public boolean contains(double o)
-	{
-		DoubleIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(o == e.next())
-			{
+	public boolean contains(double o) {
+		var e = iterator();
+		while(e.hasNext()) {
+			if(o == e.nextDouble()) {
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -115,18 +98,15 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * return list.toArray();
 	 * }</pre>
 	 */
-	public double[] toArray()
-	{
+	public double[] toArray() {
 		// Estimate size of array; be prepared to see more or fewer elements
-		double[] r = new double[size()];
-		DoubleIterator it = iterator();
-		for(int i = 0; i < r.length; i++)
-		{
-			if(!it.hasNext())	// fewer elements than expected
-			{
+		var r = new double[size()];
+		var it = iterator();
+		for(int i = 0; i < r.length; i++) {
+			if(!it.hasNext()) {	// fewer elements than expected
 				return Arrays.copyOf(r, i);
 			}
-			r[i] = it.next();
+			r[i] = it.nextDouble();
 		}
 		return it.hasNext() ? finishToArray(r, it) : r;
 	}
@@ -158,25 +138,21 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @throws NullPointerException {@inheritDoc}
 	 */
 	@Override
-	public double[] toArray(double[] a)
-	{
+	public double[] toArray(double[] a) {
 		// Estimate size of array; be prepared to see more or fewer elements
 		int size = size();
-		double[] r = a.length >= size ? a : new double[size];
-		DoubleIterator it = iterator();
+		var r = a.length >= size ? a : new double[size];
+		var it = iterator();
 
-		for(int i = 0; i < r.length; i++)
-		{
-			if(!it.hasNext())
-			{ // fewer elements than expected
-				if(a != r)
-				{
+		for(int i = 0; i < r.length; i++) {
+			if(!it.hasNext()) { // fewer elements than expected
+				if(a != r) {
 					return Arrays.copyOf(r, i);
 				}
 				r[i] = 0; // null-terminate
 				return r;
 			}
-			r[i] = it.next();
+			r[i] = it.nextDouble();
 		}
 		return it.hasNext() ? finishToArray(r, it) : r;
 	}
@@ -191,26 +167,21 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @return array containing the elements in the given array, plus any
 	 *         further elements returned by the iterator, trimmed to size
 	 */
-	private static double[] finishToArray(double[] r, DoubleIterator it)
-	{
+	private static double[] finishToArray(double[] r, PrimitiveIterator.OfDouble it) {
 		int i = r.length;
-		while(it.hasNext())
-		{
+		while(it.hasNext()) {
 			int cap = r.length;
-			if(i == cap)
-			{
+			if(i == cap) {
 				int newCap = ((cap / 2) + 1) * 3;
-				if(newCap <= cap)
-				{ // integer overflow
-					if(cap == Integer.MAX_VALUE)
-					{
+				if(newCap <= cap) { // integer overflow
+					if(cap == Integer.MAX_VALUE) {
 						throw new OutOfMemoryError("Required array size too large");
 					}
 					newCap = Integer.MAX_VALUE;
 				}
 				r = Arrays.copyOf(r, newCap);
 			}
-			r[i++] = it.next();
+			r[i++] = it.nextDouble();
 		}
 		// trim if overallocated
 		return (i == r.length) ? r : Arrays.copyOf(r, i);
@@ -251,18 +222,14 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @throws NullPointerException		  {@inheritDoc}
 	 */
 	@Override
-	public boolean remove(double o)
-	{
-		DoubleIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(o == e.next())
-			{
+	public boolean remove(double o) {
+		var e = iterator();
+		while(e.hasNext()) {
+			if(o == e.nextDouble()) {
 				e.remove();
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -281,13 +248,10 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @see #contains(double)
 	 */
 	@Override
-	public boolean containsAll(DoubleCollection c)
-	{
-		DoubleIterator e = c.iterator();
-		while(e.hasNext())
-		{
-			if(!contains(e.next()))
-			{
+	public boolean containsAll(DoubleCollection c) {
+		var e = c.iterator();
+		while(e.hasNext()) {
+			if(!contains(e.nextDouble())) {
 				return false;
 			}
 		}
@@ -311,16 +275,11 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @see #add(double)
 	 */
 	@Override
-	public boolean addAll(DoubleCollection c)
-	{
+	public boolean addAll(DoubleCollection c) {
 		boolean modified = false;
-		DoubleIterator e = c.iterator();
-		while(e.hasNext())
-		{
-			if(add(e.next()))
-			{
-				modified = true;
-			}
+		var e = c.iterator();
+		while(e.hasNext()) {
+			modified |= add(e.nextDouble());
 		}
 		return modified;
 	}
@@ -345,14 +304,11 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @see #contains(double)
 	 */
 	@Override
-	public boolean removeAll(DoubleCollection c)
-	{
+	public boolean removeAll(DoubleCollection c) {
 		boolean modified = false;
-		DoubleIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(c.contains(e.next()))
-			{
+		var e = iterator();
+		while(e.hasNext()) {
+			if(c.contains(e.nextDouble())) {
 				e.remove();
 				modified = true;
 			}
@@ -380,14 +336,11 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @see #contains(double)
 	 */
 	@Override
-	public boolean retainAll(DoubleCollection c)
-	{
+	public boolean retainAll(DoubleCollection c) {
 		boolean modified = false;
-		DoubleIterator e = iterator();
-		while(e.hasNext())
-		{
-			if(!c.contains(e.next()))
-			{
+		var e = iterator();
+		while(e.hasNext()) {
+			if(!c.contains(e.nextDouble())) {
 				e.remove();
 				modified = true;
 			}
@@ -410,12 +363,10 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @throws UnsupportedOperationException {@inheritDoc}
 	 */
 	@Override
-	public void clear()
-	{
-		DoubleIterator e = iterator();
-		while(e.hasNext())
-		{
-			e.next();
+	public void clear() {
+		var e = iterator();
+		while(e.hasNext()) {
+			e.nextDouble();
 			e.remove();
 		}
 	}
@@ -434,20 +385,17 @@ public abstract class AbstractDoubleCollection implements DoubleCollection
 	 * @return a string representation of this collection
 	 */
 	@Override
-	public String toString()
-	{
-		DoubleIterator i = iterator();
+	public String toString() {
+		var i = iterator();
 		if(!i.hasNext())
 			return "[]";
 
-		StringBuilder sb = new StringBuilder();
+		var sb = new StringBuilder();
 		sb.append('[');
-		for(; ;)
-		{
-			double e = i.next();
+		for(; ;) {
+			double e = i.nextDouble();
 			sb.append(e);
-			if(!i.hasNext())
-			{
+			if(!i.hasNext()) {
 				return sb.append(']').toString();
 			}
 			sb.append(", ");

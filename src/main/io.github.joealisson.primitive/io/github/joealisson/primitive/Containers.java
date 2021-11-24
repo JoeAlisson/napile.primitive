@@ -24,7 +24,7 @@ import io.github.joealisson.primitive.function.ToLongObjLongBiFunction;
 import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.lists.LongList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractLongList;
-import io.github.joealisson.primitive.pair.IntInt;
+import io.github.joealisson.primitive.pair.IntDouble;
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.sets.abstracts.AbstractIntSet;
 
@@ -50,6 +50,7 @@ public class Containers
     //
     public static final IntList EMPTY_INT_LIST = new EmptyIntList();
     public static final LongList EMPTY_LONG_LIST = new EmptyLongList();
+    public static final DoubleList EMPTY_DOUBLE_LIST = new EmptyDoubleList();
     //
     private static final IntSet EMPTY_INT_SET = new EmptyIntSet();
     public static final LongSet EMPTY_LONG_SET = new EmptyLongSet();
@@ -102,6 +103,10 @@ public class Containers
         return new SingletonLongList(t);
     }
 
+    public static DoubleList singletonDoubleList(double e) {
+        return new SingletonDoubleList(e);
+    }
+
     /**
      * Return simple singleton of iterator if param
      *
@@ -122,6 +127,15 @@ public class Containers
     public static LongIterator singletonLongIterator(final long e)
     {
         return new SingletonLongIterator(e);
+    }
+
+    public static PrimitiveIterator.OfDouble singletonDoubleIterator(final double e)
+    {
+        return new SingletonDoubleIterator(e);
+    }
+
+    public static DoubleList emptyDoubleList() {
+        return EMPTY_DOUBLE_LIST;
     }
 
     private static class SingletonIntIterator implements PrimitiveIterator.OfInt
@@ -272,6 +286,80 @@ public class Containers
         }
     }
 
+    private static class SingletonDoubleList extends AbstractDoubleList implements RandomAccess, Serializable
+    {
+        public static final long serialVersionUID = -4633338207563639718L;
+
+        private final double element;
+
+        SingletonDoubleList(double obj)
+        {
+            element = obj;
+        }
+
+        @Override
+        public PrimitiveIterator.OfDouble iterator()
+        {
+            return singletonDoubleIterator(element);
+        }
+
+        @Override
+        public int size()
+        {
+            return 1;
+        }
+
+        @Override
+        public boolean contains(double obj)
+        {
+            return element == obj;
+        }
+
+        @Override
+        public double get(int index)
+        {
+            if(index != 0)
+            {
+                throw new IndexOutOfBoundsException("Index: " + index + ", Size: 1");
+            }
+            return element;
+        }
+    }
+
+    private static class SingletonDoubleIterator implements PrimitiveIterator.OfDouble
+    {
+        private boolean _hasNext = true;
+        private final double _value;
+
+        public SingletonDoubleIterator(double value)
+        {
+            _value = value;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return _hasNext;
+        }
+
+        @Override
+        public double nextDouble()
+        {
+            if(_hasNext)
+            {
+                _hasNext = false;
+                return _value;
+            }
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     private static class EmptyIntIterator implements PrimitiveIterator.OfInt
     {
         @Override
@@ -314,7 +402,7 @@ public class Containers
         }
     }
 
-    public static abstract class AbstractImmutableIntCollection extends AbstractIntCollection {
+    private static abstract class AbstractImmutableIntCollection extends AbstractIntCollection {
         @Override public boolean add(int e) { throw  new UnsupportedOperationException(); }
         @Override public boolean addAll(IntCollection c) { throw new UnsupportedOperationException(); }
         @Override public boolean addAll(int[] array) { throw new UnsupportedOperationException(); }
@@ -352,7 +440,7 @@ public class Containers
         public abstract int hashCode();
     }
 
-    public static final class IntSet12 extends AbstractImmutableIntSet
+    static final class IntSet12 extends AbstractImmutableIntSet
             implements Serializable {
 
         private final int e0;
@@ -410,7 +498,7 @@ public class Containers
         }
     }
 
-    public static abstract class ImmutabbleIntMap<V> extends AbstractIntMap<V> implements Serializable{
+    private static abstract class ImmutabbleIntMap<V> extends AbstractIntMap<V> implements Serializable{
         @Override public void clear() { throw new UnsupportedOperationException(); }
         @Override public V compute(int key, IntBiFunction<? super V,? extends V> rf) { throw new UnsupportedOperationException(); }
         @Override public V computeIfAbsent(int key, IntFunction<? extends V> mf) { throw new UnsupportedOperationException(); }
@@ -426,7 +514,7 @@ public class Containers
         @Override public void replaceAll(IntBiFunction<? super V,? extends V> f) { throw new UnsupportedOperationException(); }
     }
 
-    public static class IntMap1<V> extends ImmutabbleIntMap<V> {
+    static class IntMap1<V> extends ImmutabbleIntMap<V> {
         private final int k0;
         private final V v0;
 
@@ -803,7 +891,7 @@ public class Containers
         }
     }
 
-    public static abstract class ImmutabbleMapToLong<K> extends AbstractMapToLong<K> implements Serializable{
+    private static abstract class ImmutabbleMapToLong<K> extends AbstractMapToLong<K> implements Serializable{
         @Override public void clear() { throw new UnsupportedOperationException(); }
         @Override public long compute(K key, ToLongObjLongBiFunction<? super K> remappingFunction) { throw new UnsupportedOperationException(); }
         @Override public long computeIfAbsent(K key, ToLongFunction<? super K> mappingFunction) { throw new UnsupportedOperationException(); }
@@ -819,7 +907,7 @@ public class Containers
         @Override public void replaceAll(ToLongObjLongBiFunction<? super K> function) { throw new UnsupportedOperationException(); }
     }
 
-    public static class MapToLong1<K> extends ImmutabbleMapToLong<K> {
+    static class MapToLong1<K> extends ImmutabbleMapToLong<K> {
         private final K k0;
         private final long v0;
 
@@ -976,6 +1064,105 @@ public class Containers
 
         @Override
         public long get(int index)
+        {
+            throw new IndexOutOfBoundsException("Index: " + index);
+        }
+
+        // Preserves singleton property
+        private Object readResolve()
+        {
+            return EMPTY_INT_LIST;
+        }
+    }
+
+    private static class EmptyIntDoubleMap extends AbstractIntDoubleMap implements  Serializable {
+        public static final long serialVersionUID = 2323155007002525853L;
+
+        @Override
+        public int size()
+        {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean containsKey(int key)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean containsValue(double value)
+        {
+            return false;
+        }
+
+        @Override
+        public double get(int key)
+        {
+            return Constants.DEFAULT_DOUBLE_VALUE;
+        }
+
+        @Override
+        public IntSet keySet()
+        {
+            return EMPTY_INT_SET;
+        }
+
+        @Override
+        public DoubleCollection values()
+        {
+            return EMPTY_DOUBLE_LIST;
+        }
+
+        @Override
+        public Set<IntDouble> entrySet()
+        {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            return (o instanceof IntIntMap) && ((IntIntMap) o).size() == 0;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+
+        // Preserves singleton property
+        private Object readResolve()
+        {
+            return EMPTY_INT_INT_MAP;
+        }
+    }
+
+    private static class EmptyDoubleList extends AbstractDoubleList implements RandomAccess, Serializable
+    {
+        public static final long serialVersionUID = 7062789284942705902L;
+
+        @Override
+        public int size()
+        {
+            return 0;
+        }
+
+        @Override
+        public boolean contains(double obj)
+        {
+            return false;
+        }
+
+        @Override
+        public double get(int index)
         {
             throw new IndexOutOfBoundsException("Index: " + index);
         }

@@ -24,12 +24,13 @@
  */
 package io.github.joealisson.primitive;
 
-import io.github.joealisson.primitive.collections.DoubleCollection;
 import io.github.joealisson.primitive.pair.IntDouble;
 
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntToDoubleFunction;
+
+import static io.github.joealisson.primitive.Constants.DEFAULT_DOUBLE_VALUE;
 
 /**
  * <p>
@@ -194,6 +195,33 @@ public interface IntDoubleMap extends Container
 	 *                              does not permit null keys (optional)
 	 */
 	double get(int key);
+
+	/**
+	 * Returns the value to which the specified key is mapped, or
+	 * {@code defaultValue} if this map contains no mapping for the key.
+	 *
+	 *
+	 * The default implementation makes no guarantees about synchronization
+	 * or atomicity properties of this method. Any implementation providing
+	 * atomicity guarantees must override this method and document its
+	 * concurrency properties.
+	 *
+	 * @param key the key whose associated value is to be returned
+	 * @param defaultValue the default mapping of the key
+	 * @return the value to which the specified key is mapped, or
+	 * {@code defaultValue} if this map contains no mapping for the key
+	 * @throws ClassCastException if the key is of an inappropriate type for
+	 * this map
+	 * (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
+	 * @throws NullPointerException if the specified key is null and this map
+	 * does not permit null keys
+	 * (<a href="{@docRoot}/java.base/java/util/Collection.html#optional-restrictions">optional</a>)
+	 * @since 1.8
+	 */
+	default double getOrDefault(int key, double defaultValue) {
+		double v;
+		return (((v = get(key)) != DEFAULT_DOUBLE_VALUE) || containsKey(key)) ? v : defaultValue;
+	}
 
 	// Modification Operations
 

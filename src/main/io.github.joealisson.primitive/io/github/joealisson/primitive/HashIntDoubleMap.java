@@ -1,8 +1,5 @@
 package io.github.joealisson.primitive;
 
-import io.github.joealisson.primitive.collections.DoubleCollection;
-import io.github.joealisson.primitive.collections.abstracts.AbstractDoubleCollection;
-import io.github.joealisson.primitive.iterators.DoubleIterator;
 import io.github.joealisson.primitive.pair.IntDouble;
 import io.github.joealisson.primitive.pair.IntLong;
 import io.github.joealisson.primitive.pair.impl.IntDoubleImpl;
@@ -737,7 +734,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 		size++;
 	}
 
-	private abstract class HashDoubleIterator implements DoubleIterator
+	private abstract class HashDoubleIterator implements PrimitiveIterator.OfDouble
 	{
 		Entry next;	// next entry to return
 		int expectedModCount;	// For fast-fail
@@ -937,8 +934,13 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 	private final class ValueIterator extends HashDoubleIterator
 	{
-		public double next()
+		public Double next()
 		{
+			return nextEntry().getValue();
+		}
+
+		@Override
+		public double nextDouble() {
 			return nextEntry().getValue();
 		}
 	}
@@ -965,7 +967,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 		return new KeyIterator();
 	}
 
-	DoubleIterator newValueIterator()
+	PrimitiveIterator.OfDouble newValueIterator()
 	{
 		return new ValueIterator();
 	}
@@ -1048,7 +1050,7 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 
 	private final class Values extends AbstractDoubleCollection
 	{
-		public DoubleIterator iterator()
+		public PrimitiveIterator.OfDouble iterator()
 		{
 			return newValueIterator();
 		}
