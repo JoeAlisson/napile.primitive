@@ -1103,8 +1103,7 @@ public class Containers
         }
 
         @Override
-        public double get(int key)
-        {
+        public double get(int key) {
             return Constants.DEFAULT_DOUBLE_VALUE;
         }
 

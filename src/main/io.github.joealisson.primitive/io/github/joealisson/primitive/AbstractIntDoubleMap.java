@@ -130,7 +130,7 @@ public abstract class AbstractIntDoubleMap implements IntDoubleMap
 			if(key == e.getKey())
 				return e.getValue();
 
-		return Constants.DEFAULT_LONG_VALUE;
+		return Constants.DEFAULT_DOUBLE_VALUE;
 	}
 
 

@@ -299,14 +299,13 @@ public class HashIntDoubleMap extends AbstractIntDoubleMap implements IntDoubleM
 	 *
 	 * @see #put(int, double)
 	 */
-	public double get(int key)
-	{
+	public double get(int key) {
 		int hash = hash(key);
 		for(Entry e = table[indexFor(hash, table.length)]; e != null; e = e.next)
 			if(e.hash == hash && e.getKey() == key)
 				return e.getValue();
 
-		return Constants.DEFAULT_LONG_VALUE;
+		return Constants.DEFAULT_DOUBLE_VALUE;
 	}
 
 	/**
