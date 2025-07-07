@@ -554,15 +554,15 @@ public class CHashIntMap<V> extends AbstractIntMap<V>
 
     @SuppressWarnings("unchecked")
     private static <V> Node<V> tabAt(Node<V>[] tab, int i) {
-        return (Node<V>)U.getObjectAcquire(tab, ((long)i << ASHIFT) + ABASE);
+        return (Node<V>)U.getReferenceAcquire(tab, ((long)i << ASHIFT) + ABASE);
     }
 
     private static <V> boolean casTabAt(Node<V>[] tab, int i, Node<V> c, Node<V> v) {
-        return U.compareAndSetObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
+        return U.compareAndSetReference(tab, ((long)i << ASHIFT) + ABASE, c, v);
     }
 
     private static <V> void setTabAt(Node<V>[] tab, int i, Node<V> v) {
-        U.putObjectRelease(tab, ((long)i << ASHIFT) + ABASE, v);
+        U.putReferenceRelease(tab, ((long)i << ASHIFT) + ABASE, v);
     }
 
     /* ---------------- Fields -------------- */

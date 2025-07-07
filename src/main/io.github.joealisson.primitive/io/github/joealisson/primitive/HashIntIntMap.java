@@ -25,8 +25,10 @@
 
 package io.github.joealisson.primitive;
 
-import io.github.joealisson.primitive.function.*;
-import jdk.internal.misc.SharedSecrets;
+import io.github.joealisson.primitive.function.IntIntBiConsumer;
+import io.github.joealisson.primitive.function.IntToIntBiFunction;
+import io.github.joealisson.primitive.function.ToIntIntFunction;
+import jdk.internal.access.SharedSecrets;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -34,10 +36,8 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-import java.util.function.IntFunction;
 
 import static io.github.joealisson.primitive.Constants.DEFAULT_INT_VALUE;
 

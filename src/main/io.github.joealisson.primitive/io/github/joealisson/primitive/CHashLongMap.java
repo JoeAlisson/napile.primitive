@@ -554,15 +554,15 @@ public class CHashLongMap<V> extends AbstractLongMap<V>
 
     @SuppressWarnings("unchecked")
     private static <V> Node<V> tabAt(Node<V>[] tab, long i) {
-        return (Node<V>)U.getObjectAcquire(tab, (i << ASHIFT) + ABASE);
+        return (Node<V>)U.getReferenceAcquire(tab, (i << ASHIFT) + ABASE);
     }
 
     private static <V> boolean casTabAt(Node<V>[] tab, long i, Node<V> c, Node<V> v) {
-        return U.compareAndSetObject(tab, (i << ASHIFT) + ABASE, c, v);
+        return U.compareAndSetReference(tab, (i << ASHIFT) + ABASE, c, v);
     }
 
     private static <V> void setTabAt(Node<V>[] tab, long i, Node<V> v) {
-        U.putObjectRelease(tab, ((long)i << ASHIFT) + ABASE, v);
+        U.putReferenceRelease(tab, ((long)i << ASHIFT) + ABASE, v);
     }
 
     /* ---------------- Fields -------------- */

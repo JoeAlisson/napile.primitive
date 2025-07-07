@@ -27,7 +27,7 @@ package io.github.joealisson.primitive;
 
 import io.github.joealisson.primitive.function.LongBiConsumer;
 import io.github.joealisson.primitive.function.LongBiFunction;
-import jdk.internal.misc.SharedSecrets;
+import jdk.internal.access.SharedSecrets;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;

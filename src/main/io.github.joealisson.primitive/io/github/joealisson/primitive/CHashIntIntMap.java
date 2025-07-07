@@ -607,16 +607,16 @@ public class CHashIntIntMap extends AbstractIntIntMap implements ConcurrentIntIn
 
     @SuppressWarnings("unchecked")
     static final Node tabAt(Node[] tab, int i) {
-        return (Node)U.getObjectAcquire(tab, ((long)i << ASHIFT) + ABASE);
+        return (Node)U.getReferenceAcquire(tab, ((long)i << ASHIFT) + ABASE);
     }
 
     static final boolean casTabAt(Node[] tab, int i,
                                         Node c, Node v) {
-        return U.compareAndSetObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
+        return U.compareAndSetReference(tab, ((long)i << ASHIFT) + ABASE, c, v);
     }
 
     static final void setTabAt(Node[] tab, int i, Node v) {
-        U.putObjectRelease(tab, ((long)i << ASHIFT) + ABASE, v);
+        U.putReferenceRelease(tab, ((long)i << ASHIFT) + ABASE, v);
     }
 
     /* ---------------- Fields -------------- */

@@ -25,7 +25,7 @@
 
 package io.github.joealisson.primitive;
 
-import jdk.internal.misc.SharedSecrets;
+import jdk.internal.access.SharedSecrets;
 
 import java.io.InvalidObjectException;
 import java.util.*;

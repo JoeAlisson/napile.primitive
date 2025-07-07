@@ -4,16 +4,17 @@ plugins {
     id "java-library"
     id "idea"
     id "eclipse"
-    id 'maven-publish'
+    id "com.vanniktech.maven.publish" version "0.33.0"
     id 'signing'
-    id 'net.nemerosa.versioning' version '2.8.2'
+    id 'net.nemerosa.versioning' version '3.1.0'
     id 'jacoco'
 }
 
 group = 'io.github.joealisson'
 version = '2.0.0-SNAPSHOT'
 
-sourceCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_24
+targetCompatibility = JavaVersion.VERSION_24
 
 ext.moduleName = 'io.github.joealisson.primitive'
 ext.revision = versioning.info.build
@@ -36,105 +37,84 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
-}
-
-java {
-    modularity.inferModulePath = true
+    testImplementation("org.testng:testng:7.11.0")
 }
 
 compileJava {
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation" << "--add-exports" << "java.base/jdk.internal.misc=io.github.joealisson.primitive"
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+            << "--add-exports" << "java.base/jdk.internal.access=io.github.joealisson.primitive"
+            << "--add-exports" << "java.base/jdk.internal.misc=io.github.joealisson.primitive"
 }
 
 test {
     useJUnitPlatform()
     doFirst {
         def args = jvmArgs
-        args << '--add-exports' << 'java.base/jdk.internal.misc=ALL-UNNAMED'
+        args << '--add-exports' << 'java.base/jdk.internal.access=ALL-UNNAMED' << 'java.base/jdk.internal.misc=ALL-UNNAMED'
         jvmArgs = args
     }
 }
 
 jar {
     manifest {
-        attributes('Built-By'       : System.getProperty('user.name'),
+        attributes('Built-By': System.getProperty('user.name'),
                 'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
                 'Automatic-Module-Name': 'io.github.joealisson.primitive',
-                'Build-Revision' : revision,
-                'Build-Version'  : archiveVersion,
-                'Build-Jdk'      : buildJDK)
+                'Build-Revision': revision,
+                'Build-Version': archiveVersion,
+                'Build-Jdk': buildJDK)
     }
 }
 
-task jarSources(type:Jar){
+tasks.register('jarSources', Jar) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 javadoc {
     exclude 'module-info.java'
+
+    options {
+        failOnError = false
+        addMultilineStringsOption('-add-exports').setValue([
+                'java.base/jdk.internal.access=ALL-UNNAMED',
+                'java.base/jdk.internal.misc=ALL-UNNAMED'
+        ])
+    }
 }
 
-task javadocJar(type: Jar) {
+tasks.register('javadocJar', Jar) {
     archiveClassifier = 'javadoc'
 }
 
-publishing {
-    publications {
 
-        maven(MavenPublication) {
-            from components.java
+mavenPublishing {
+    publishToMavenCentral(true)
+    signAllPublications()
 
-            artifact jarSources
-            artifact javadocJar
+    coordinates("io.github.joealisson", "primitive", "2.0.0-SNAPSHOT")
 
-            tasks.withType(Jar) {
-                from(project.projectDir) {
-                    include 'LICENSE'
-                    into 'META-INF'
-                }
-            }
-
-            pom {
-                name = 'Primitive Collections'
-                description = 'Primitive collections framework based on Java Collections API'
-                url = 'https://github.com/JoeAlisson/napile.primitive'
-                licenses {
-                    license {
-                        name = 'GNU General Public License v3.0'
-                        url = 'https://opensource.org/licenses/AGPL-3.0'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'JoeAlisson'
-                        name = 'Alisson Oliveira'
-                        email = 'joe.alisson@gmail.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/JoeAlisson/napile.primitive.git'
-                    developerConnection = 'scm:git:ssh://github.com:JoeAlisson/napile.primitive.git'
-                    url = 'https://github.com/JoeAlisson/apile.primitive.git/tree/master'
-                }
+    pom {
+        name = 'Primitive Collections'
+        description = 'Primitive collections framework based on Java Collections API'
+        url = 'https://github.com/JoeAlisson/napile.primitive'
+        licenses {
+            license {
+                name = 'GNU General Public License v3.0'
+                url = 'https://opensource.org/licenses/AGPL-3.0'
             }
         }
-    }
-
-    repositories {
-        maven {
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username ossrhUsername
-                password ossrhPassword
+        developers {
+            developer {
+                id = 'JoeAlisson'
+                name = 'Alisson Valério'
+                email = 'joe.alisson@gmail.com'
             }
         }
+        scm {
+            connection = 'scm:git:git://github.com/JoeAlisson/napile.primitive.git'
+            developerConnection = 'scm:git:ssh://github.com:JoeAlisson/napile.primitive.git'
+            url = 'https://github.com/JoeAlisson/napile.primitive.git/tree/master'
+        }
     }
-}
-
-signing {
-    sign publishing.publications.maven
 }

@@ -3,7 +3,7 @@ package io.github.joealisson.primitive;
 import java.util.*;
 import java.util.function.*;
 
-import jdk.internal.misc.SharedSecrets;
+import jdk.internal.access.SharedSecrets;
 
 /**
  * Resizable-array implementation of the {@code List} interface.  Implements

@@ -27,7 +27,7 @@ package io.github.joealisson.primitive;
 
 import io.github.joealisson.primitive.function.IntBiFunction;
 import io.github.joealisson.primitive.function.IntBiConsumer;
-import jdk.internal.misc.SharedSecrets;
+import jdk.internal.access.SharedSecrets;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;

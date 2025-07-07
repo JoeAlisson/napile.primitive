@@ -30,7 +30,7 @@ import io.github.joealisson.primitive.iterators.LongIterator;
 import io.github.joealisson.primitive.iterators.LongListIterator;
 import io.github.joealisson.primitive.lists.LongList;
 import io.github.joealisson.primitive.lists.abstracts.AbstractLongList;
-import sun.misc.Unsafe;
+import jdk.internal.misc.Unsafe;
 
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
@@ -302,7 +302,7 @@ public class CArrayLongList implements LongList, RandomAccess, Cloneable, java.i
         try
         {
             CArrayLongList c = (CArrayLongList) (super.clone());
-            c.resetLock();
+            c.array = Arrays.copyOf(this.array, this.size());
             return c;
         }
         catch(CloneNotSupportedException e)
@@ -1613,7 +1613,7 @@ public class CArrayLongList implements LongList, RandomAccess, Cloneable, java.i
 
     private void resetLock()
     {
-        unsafe.putObjectVolatile(this, lockOffset, new ReentrantLock());
+        unsafe.putReferenceVolatile(this, lockOffset, new ReentrantLock());
     }
 
 }

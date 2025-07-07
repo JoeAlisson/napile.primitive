@@ -28,7 +28,7 @@ package io.github.joealisson.primitive;
 import java.io.InvalidObjectException;
 import java.util.*;
 
-import jdk.internal.misc.SharedSecrets;
+import jdk.internal.access.SharedSecrets;
 
 /**
  * This class implements the {@code Set} interface, backed by a hash table
